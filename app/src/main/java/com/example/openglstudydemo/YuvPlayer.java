@@ -42,7 +42,8 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
      Log.d("YuvPlayer","run");
 //        loadYuv(PATH,getHolder().getSurface());
 
-     drawTwoTriangle(getHolder().getSurface());
+//     drawTwoTriangle(getHolder().getSurface());
+     drawTriangle(getHolder().getSurface());
      Log.d("YuvPlayer","loadYuv");
     }
 

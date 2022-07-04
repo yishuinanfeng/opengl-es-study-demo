@@ -9,19 +9,21 @@
 #define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"yuvOpenGlDemo",__VA_ARGS__)
 
 #define GET_STR(x) #x
-static const char *vertexSimpleShape = GET_STR(
-        attribute
-        vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段
+static const char *vertexSimpleShape =
+                                       "        #version 300 es\n"
+                                       "        layout (location = 0) in\n"
+                                       "        vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"
+                                       "\n"
+                                       "        out\n"
+                                       "        vec4 vTextColor;//输出的颜色\n"
+                                       "\n"
+                                       "        void main() {\n"
+                                       "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
+                                       "            gl_Position = aPosition;\n"
+                                       "            vTextColor = vec4(aPosition.x + 0.8 ,aPosition.y + 0.8,aPosition.z - 0.5,1.0);\n"
+                                       "        }"
 
-        varying
-        vec4 vTextColor;//输出的颜色
-
-        void main() {
-            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的
-            gl_Position = aPosition;
-            vTextColor = vec4(aPosition.x + 0.8 ,aPosition.y + 0.8,aPosition.z - 0.5,1.0);
-        }
-);
+;
 
 //顶点着色器，每个顶点执行一次，可以并行执行
 #define GET_STR(x) #x
@@ -41,18 +43,21 @@ static const char *vertexShader = GET_STR(
 );
 
 //图元被光栅化为多少片段，就被调用多少次
-static const char *fragSimpleShape = GET_STR(
-        precision
-        mediump float;
+static const char *fragSimpleShape =
+                                     "  #version 300 es\n"
+                                     "        precision\n"
+                                     "        mediump float;\n"
+                                     "\n"
+                                     "        in\n"
+                                     "        vec4 vTextColor;//输出的颜色\n"
+                                     "out vec4 FragColor;\n"
+                                     "\n"
+                                     "        void main() {\n"
+                                     "            //gl_FragColor是OpenGL内置的\n"
+                                     "            FragColor = vTextColor;\n"
+                                     "        }"
 
-        varying
-        vec4 vTextColor;//输出的颜色
-
-        void main() {
-            //gl_FragColor是OpenGL内置的
-            gl_FragColor = vTextColor;
-        }
-);
+;
 
 //图元被光栅化为多少片段，就被调用多少次
 static const char *fragYUV420P = GET_STR(
@@ -235,7 +240,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
 
     GLuint apos = static_cast<GLuint>(glGetAttribLocation(program, "aPosition"));
     glEnableVertexAttribArray(apos);
-    glVertexAttribPointer(apos, 3, GL_FLOAT, GL_FALSE, 0, triangleVer);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, triangleVer);
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
