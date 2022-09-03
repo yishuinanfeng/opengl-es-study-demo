@@ -11,8 +11,8 @@
 #define GET_STR(x) #x
 static const char *vertexSimpleShape =
                                        "        #version 300 es\n"
-                                       "        layout (location = 0) in\n"
-                                       "        vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"
+//                                       "        layout (location = 1) \n"
+                                       "        in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"
                                        "\n"
                                        "        out\n"
                                        "        vec4 vTextColor;//输出的颜色\n"
@@ -20,6 +20,7 @@ static const char *vertexSimpleShape =
                                        "        void main() {\n"
                                        "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
                                        "            gl_Position = aPosition;\n"
+                                       "            gl_PointSize = 50.0;\n"
                                        "            vTextColor = vec4(aPosition.x + 0.8 ,aPosition.y + 0.8,aPosition.z - 0.5,1.0);\n"
                                        "        }"
 
@@ -54,7 +55,8 @@ static const char *fragSimpleShape =
                                      "\n"
                                      "        void main() {\n"
                                      "            //gl_FragColor是OpenGL内置的\n"
-                                     "            FragColor = vTextColor;\n"
+                                     "            //FragColor = vTextColor;\n"
+                                     "            FragColor = vec4(0.5,0.5,0.5,1.0);\n"
                                      "        }"
 
 ;
@@ -162,9 +164,9 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
     EGLConfig eglConfig;
     EGLint configNum;
     EGLint configSpec[] = {
-            EGL_RED_SIZE, 8,
-            EGL_GREEN_SIZE, 8,
-            EGL_BLUE_SIZE, 8,
+            EGL_RED_SIZE, 4,
+            EGL_GREEN_SIZE, 4,
+            EGL_BLUE_SIZE, 4,
             EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
             EGL_NONE
     };
@@ -173,6 +175,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
         LOGD("eglChooseConfig failed");
         return;
     }
+
+//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
@@ -224,13 +228,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
     //激活渲染程序
     glUseProgram(program);
 
-    //加入三维顶点数据
-    static float rectangleVer[] = {
-            1.0f, -1.0f, 0.0f,
-            -1.0f, -1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f,
-            -1.0f, 1.0f, 0.0f
-    };
+//    //加入三维顶点数据
+//    static float rectangleVer[] = {
+//            1.0f, -1.0f, 0.0f,
+//            -1.0f, -1.0f, 0.0f,
+//            1.0f, 1.0f, 0.0f,
+//            -1.0f, 1.0f, 0.0f
+//    };
 
     static float triangleVer[] = {
             0.8f, -0.8f, 0.0f,
@@ -238,14 +242,14 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
             0.0f, 0.8f, 0.0f,
     };
 
-    GLuint apos = static_cast<GLuint>(glGetAttribLocation(program, "aPosition"));
-    glEnableVertexAttribArray(apos);
+//    GLuint apos = static_cast<GLuint>(glGetAttribLocation(program, "aPosition"));
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, triangleVer);
+    glEnableVertexAttribArray(0);
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+    glDrawArrays(GL_POINTS, 0, 3);
     //窗口显示，交换双缓冲区
     eglSwapBuffers(display, winSurface);
 }

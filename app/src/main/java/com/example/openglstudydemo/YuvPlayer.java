@@ -49,7 +49,11 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
     public native void loadYuv(String url, Object surface);
 
-    public native void drawTriangle(Object surface);
+ /**
+  * 绘制三角形的native方法
+  * @param surface
+  */
+ public native void drawTriangle(Object surface);
 
     public native void drawTwoTriangle(Object surface);
 
