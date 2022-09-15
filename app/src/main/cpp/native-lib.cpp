@@ -3,28 +3,44 @@
 #include <android/log.h>
 #include <android/native_window_jni.h>
 #include <EGL/egl.h>
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <string.h>
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"yuvOpenGlDemo",__VA_ARGS__)
 
 #define GET_STR(x) #x
 static const char *vertexSimpleShape =
-                                       "        #version 300 es\n"
-//                                       "        layout (location = 1) \n"
-                                       "        in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"
-                                       "\n"
-                                       "        out\n"
-                                       "        vec4 vTextColor;//输出的颜色\n"
-                                       "\n"
-                                       "        void main() {\n"
-                                       "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
-                                       "            gl_Position = aPosition;\n"
-                                       "            gl_PointSize = 50.0;\n"
-                                       "            vTextColor = vec4(aPosition.x + 0.8 ,aPosition.y + 0.8,aPosition.z - 0.5,1.0);\n"
-                                       "        }"
+        "        #version 300 es\n"
+        "        layout (location = 0) \n"
+        "        in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"
+        "\n"
+        "        out\n"
+        "        vec4 vTextColor;//输出的颜色\n"
+        "\n"
+        "        void main() {\n"
+        "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
+        "            gl_Position = aPosition;\n"
+        "            gl_PointSize = 50.0;\n"
+        "            vTextColor = vec4(aPosition.x + 0.8 ,aPosition.y + 0.8,aPosition.z - 0.5,1.0);\n"
+        "        }";
 
-;
+#define GET_STR(x) #x
+static const char *vertexSimpleShapeWithColor =
+        "        #version 300 es\n"
+        "        layout (location = 0) \n"
+        "        in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"//如果传入的向量是不够4维的，自动将前三个分量设置为0.0，最后一个分量设置为1.0
+
+        "        layout (location = 1) \n"
+        "        in vec4 aColor;//输入的顶点的颜色\n" //如果传入的向量是不够4维的，自动将前三个分量设置为0.0，最后一个分量设置为1.0
+        "\n"
+        "        out\n"
+        "        vec4 vTextColor;//输出的颜色\n"
+        "\n"
+        "        void main() {\n"
+        "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
+        "            gl_Position = aPosition;\n"
+        "            vTextColor = aColor;\n"
+        "        }";
 
 //顶点着色器，每个顶点执行一次，可以并行执行
 #define GET_STR(x) #x
@@ -45,21 +61,18 @@ static const char *vertexShader = GET_STR(
 
 //图元被光栅化为多少片段，就被调用多少次
 static const char *fragSimpleShape =
-                                     "  #version 300 es\n"
-                                     "        precision\n"
-                                     "        mediump float;\n"
-                                     "\n"
-                                     "        in\n"
-                                     "        vec4 vTextColor;//输出的颜色\n"
-                                     "out vec4 FragColor;\n"
-                                     "\n"
-                                     "        void main() {\n"
-                                     "            //gl_FragColor是OpenGL内置的\n"
-                                     "            //FragColor = vTextColor;\n"
-                                     "            FragColor = vec4(0.5,0.5,0.5,1.0);\n"
-                                     "        }"
-
-;
+        "  #version 300 es\n"
+        "        precision\n"
+        "        mediump float;\n"
+        "\n"
+        "        in\n"
+        "        vec4 vTextColor;//输出的颜色\n"
+        "out vec4 FragColor;\n"
+        "\n"
+        "        void main() {\n"
+        "            //gl_FragColor是OpenGL内置的\n"
+        "            FragColor = vTextColor;\n"
+        "        }";
 
 //图元被光栅化为多少片段，就被调用多少次
 static const char *fragYUV420P = GET_STR(
@@ -141,8 +154,8 @@ GLint initShader(const char *source, GLint type) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thiz,
-                                                        jobject surface) {
+Java_com_example_openglstudydemo_YuvPlayer_drawPoints(JNIEnv *env, jobject thiz,
+                                                      jobject surface) {
 
 //1.获取原始窗口
     //be sure to use ANativeWindow_release()
@@ -236,10 +249,271 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
 //            -1.0f, 1.0f, 0.0f
 //    };
 
-    static float triangleVer[] = {
+//三个点坐标
+    static float pointsVer[] = {
             0.8f, -0.8f, 0.0f,
             -0.8f, -0.8f, 0.0f,
             0.0f, 0.8f, 0.0f,
+    };
+
+//    GLuint apos = static_cast<GLuint>(glGetAttribLocation(program, "aPosition"));旧的传输数据方式
+//通过layout传输数据，传给了着色器中layout为0的变量
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, pointsVer);
+    //打开layout为0的变量传输开关
+    glEnableVertexAttribArray(0);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+//绘制三个点
+    glDrawArrays(GL_POINTS, 0, 3);
+    //窗口显示，交换双缓冲区
+    eglSwapBuffers(display, winSurface);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_openglstudydemo_YuvPlayer_drawLine(JNIEnv *env, jobject thiz,
+                                                    jobject surface) {
+
+//1.获取原始窗口
+    //be sure to use ANativeWindow_release()
+    // * when done with it so that it doesn't leak.
+    ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
+    //获取Display
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        LOGD("egl display failed");
+        return;
+    }
+    //2.初始化egl，后两个参数为主次版本号
+    if (EGL_TRUE != eglInitialize(display, 0, 0)) {
+        LOGD("eglInitialize failed");
+        return;
+    }
+
+    //3.1 surface配置，可以理解为窗口
+    EGLConfig eglConfig;
+    EGLint configNum;
+    EGLint configSpec[] = {
+            EGL_RED_SIZE, 4,
+            EGL_GREEN_SIZE, 4,
+            EGL_BLUE_SIZE, 4,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_NONE
+    };
+
+    if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
+        LOGD("eglChooseConfig failed");
+        return;
+    }
+
+//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+
+    //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
+    EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
+    if (winSurface == EGL_NO_SURFACE) {
+        LOGD("eglCreateWindowSurface failed");
+        return;
+    }
+
+    //4 创建关联上下文
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+    //EGL_NO_CONTEXT表示不需要多个设备共享上下文
+    EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
+    if (context == EGL_NO_CONTEXT) {
+        LOGD("eglCreateContext failed");
+        return;
+    }
+    //将egl和opengl关联
+    //两个surface一个读一个写。第二个一般用来离线渲染？
+    if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
+        LOGD("eglMakeCurrent failed");
+        return;
+    }
+
+    GLint vsh = initShader(vertexSimpleShape, GL_VERTEX_SHADER);
+    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
+
+    //创建渲染程序
+    GLint program = glCreateProgram();
+    if (program == 0) {
+        LOGD("glCreateProgram failed");
+        return;
+    }
+
+    //向渲染程序中加入着色器
+    glAttachShader(program, vsh);
+    glAttachShader(program, fsh);
+
+    //链接程序
+    glLinkProgram(program);
+    GLint status = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == 0) {
+        LOGD("glLinkProgram failed");
+        return;
+    }
+    LOGD("glLinkProgram success");
+    //激活渲染程序
+    glUseProgram(program);
+
+//    //加入三维顶点数据
+//    static float rectangleVer[] = {
+//            1.0f, -1.0f, 0.0f,
+//            -1.0f, -1.0f, 0.0f,
+//            1.0f, 1.0f, 0.0f,
+//            -1.0f, 1.0f, 0.0f
+//    };
+
+//四个点坐标
+    static float lineVer[] = {
+            0.8f, -0.8f, 0.0f,
+            -0.8f, -0.8f, 0.0f,
+            0.0f, 0.8f, 0.0f,
+            0.4f, 0.8f, 0.0f,
+    };
+
+//    GLuint apos = static_cast<GLuint>(glGetAttribLocation(program, "aPosition"));旧的传输数据方式
+//通过layout传输数据，传给了着色器中layout为0的变量
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, lineVer);
+    //打开layout为0的变量传输开关
+    glEnableVertexAttribArray(0);
+
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    //设置线段宽度
+    glLineWidth(20);
+//绘制2条线段
+    // glDrawArrays(GL_LINES, 0, 4);
+
+    // 绘制2条线段
+//     glDrawArrays(GL_LINE_STRIP, 0, 4);
+//绘制2条线段
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+    //窗口显示，交换双缓冲区
+    eglSwapBuffers(display, winSurface);
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thiz,
+                                                        jobject surface) {
+
+//1.获取原始窗口
+    //be sure to use ANativeWindow_release()
+    // * when done with it so that it doesn't leak.
+    ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
+    //获取Display
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        LOGD("egl display failed");
+        return;
+    }
+    //2.初始化egl，后两个参数为主次版本号
+    if (EGL_TRUE != eglInitialize(display, 0, 0)) {
+        LOGD("eglInitialize failed");
+        return;
+    }
+
+    //3.1 surface配置，可以理解为窗口
+    EGLConfig eglConfig;
+    EGLint configNum;
+    EGLint configSpec[] = {
+            EGL_RED_SIZE, 4,
+            EGL_GREEN_SIZE, 4,
+            EGL_BLUE_SIZE, 4,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_NONE
+    };
+
+    if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
+        LOGD("eglChooseConfig failed");
+        return;
+    }
+
+//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+
+    //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
+    EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
+    if (winSurface == EGL_NO_SURFACE) {
+        LOGD("eglCreateWindowSurface failed");
+        return;
+    }
+
+    //4 创建关联上下文
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+    //EGL_NO_CONTEXT表示不需要多个设备共享上下文
+    EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
+    if (context == EGL_NO_CONTEXT) {
+        LOGD("eglCreateContext failed");
+        return;
+    }
+    //将egl和opengl关联
+    //两个surface一个读一个写。第二个一般用来离线渲染？
+    if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
+        LOGD("eglMakeCurrent failed");
+        return;
+    }
+
+    GLint vsh = initShader(vertexSimpleShape, GL_VERTEX_SHADER);
+    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
+
+    //创建渲染程序
+    GLint program = glCreateProgram();
+    if (program == 0) {
+        LOGD("glCreateProgram failed");
+        return;
+    }
+
+    //向渲染程序中加入着色器
+    glAttachShader(program, vsh);
+    glAttachShader(program, fsh);
+
+    //链接程序
+    glLinkProgram(program);
+    GLint status = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == 0) {
+        LOGD("glLinkProgram failed");
+        return;
+    }
+    LOGD("glLinkProgram success");
+
+    glDeleteShader(vsh);
+    glDeleteShader(fsh);
+
+    //激活渲染程序
+    glUseProgram(program);
+
+//    //加入三维顶点数据
+//    static float rectangleVer[] = {
+//            1.0f, -1.0f, 0.0f,
+//            -1.0f, -1.0f, 0.0f,
+//            1.0f, 1.0f, 0.0f,
+//            -1.0f, 1.0f, 0.0f
+//    };
+
+//    static float triangleVer[] = {
+//            0.8f, 0.8f, 0.0f,
+//            0.0f, 0.8f, 0.0f,
+//            0.4f, 0.4f, 0.0f,
+//            -0.8f, 0.5f, 0.0f,
+//            -0.4f, 0.8f, 0.0f,
+//            -0.8f, 0.8f, 0.0f,
+//    };
+
+    static float triangleVer[] = {
+            0.8f, 0.8f, 0.0f,
+            0.8f, -0.8f, 0.0f,
+            -0.8f, 0.8f, 0.0f,
+            -0.8f, -0.8f, 0.0f,
     };
 
 //    GLuint apos = static_cast<GLuint>(glGetAttribLocation(program, "aPosition"));
@@ -249,15 +523,456 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glDrawArrays(GL_POINTS, 0, 3);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     //窗口显示，交换双缓冲区
     eglSwapBuffers(display, winSurface);
+
+    glDeleteProgram(program);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithColorPass(JNIEnv *env, jobject thiz,
+                                                                     jobject surface) {
+
+//1.获取原始窗口
+    //be sure to use ANativeWindow_release()
+    // * when done with it so that it doesn't leak.
+    ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
+    //获取Display
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        LOGD("egl display failed");
+        return;
+    }
+    //2.初始化egl，后两个参数为主次版本号
+    if (EGL_TRUE != eglInitialize(display, 0, 0)) {
+        LOGD("eglInitialize failed");
+        return;
+    }
+
+    //3.1 surface配置，可以理解为窗口
+    EGLConfig eglConfig;
+    EGLint configNum;
+    EGLint configSpec[] = {
+            EGL_RED_SIZE, 4,
+            EGL_GREEN_SIZE, 4,
+            EGL_BLUE_SIZE, 4,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_NONE
+    };
+
+    if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
+        LOGD("eglChooseConfig failed");
+        return;
+    }
+
+//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+
+    //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
+    EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
+    if (winSurface == EGL_NO_SURFACE) {
+        LOGD("eglCreateWindowSurface failed");
+        return;
+    }
+
+    //4 创建关联上下文
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+    //EGL_NO_CONTEXT表示不需要多个设备共享上下文
+    EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
+    if (context == EGL_NO_CONTEXT) {
+        LOGD("eglCreateContext failed");
+        return;
+    }
+    //将egl和opengl关联
+    //两个surface一个读一个写。第二个一般用来离线渲染？
+    if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
+        LOGD("eglMakeCurrent failed");
+        return;
+    }
+
+    GLint vsh = initShader(vertexSimpleShapeWithColor, GL_VERTEX_SHADER);
+    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
+
+    //创建渲染程序
+    GLint program = glCreateProgram();
+    if (program == 0) {
+        LOGD("glCreateProgram failed");
+        return;
+    }
+
+    //向渲染程序中加入着色器
+    glAttachShader(program, vsh);
+    glAttachShader(program, fsh);
+
+    //链接程序
+    glLinkProgram(program);
+    GLint status = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == 0) {
+        LOGD("glLinkProgram failed");
+        return;
+    }
+    LOGD("glLinkProgram success");
+    //链接成功后，着色器对象就不需要了，所以要及时释放着色器对象
+    glDeleteShader(vsh);
+    glDeleteShader(fsh);
+    //激活渲染程序
+    glUseProgram(program);
+
+    static float triangleVerWithColor[] = {
+            0.0f, 0.8f, 0.0f,//顶点
+            1.0, 0.0, 0.0,//颜色
+            -0.8f, -0.8f, 0.0f,//顶点
+            0.0, 1.0, 0.0,//颜色
+            0.8f, -0.8f, 0.0f,//顶点
+            0.0, 0.0, 1.0,//颜色
+    };
+
+    static float triangleVer[] = {
+            0.0f, 0.8f, 0.0f,//顶点
+            -0.8f, -0.8f, 0.0f,//顶点
+            0.8f, -0.8f, 0.0f,//顶点
+    };
+
+    static float colors[] = {
+            1.0, 0.0, 0.0,//颜色
+            0.0, 1.0, 0.0,//颜色
+            0.0, 0.0, 1.0,//颜色
+    };
+
+//    GLuint apos = static_cast<GLuint>(glGetAttribLocation(program, "aPosition"));
+//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 24, triangleVerWithColor);
+//    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 24, triangleVerWithColor + 3);
+
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12, triangleVer);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12, colors);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    //窗口显示，交换双缓冲区
+    eglSwapBuffers(display, winSurface);
+    //释放着色器程序对象
+    glDeleteProgram(program);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithBufferObj(JNIEnv *env, jobject thiz,
+                                                                     jobject surface) {
+
+//1.获取原始窗口
+    //be sure to use ANativeWindow_release()
+    // * when done with it so that it doesn't leak.
+    ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
+    //获取Display
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        LOGD("egl display failed");
+        return;
+    }
+    //2.初始化egl，后两个参数为主次版本号
+    if (EGL_TRUE != eglInitialize(display, 0, 0)) {
+        LOGD("eglInitialize failed");
+        return;
+    }
+
+    //3.1 surface配置，可以理解为窗口
+    EGLConfig eglConfig;
+    EGLint configNum;
+    EGLint configSpec[] = {
+            EGL_RED_SIZE, 4,
+            EGL_GREEN_SIZE, 4,
+            EGL_BLUE_SIZE, 4,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_RENDERABLE_TYPE,EGL_OPENGL_ES3_BIT,
+            EGL_NONE
+    };
+
+    if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
+        LOGD("eglChooseConfig failed");
+        return;
+    }
+
+//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+
+    //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
+    EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
+    if (winSurface == EGL_NO_SURFACE) {
+        LOGD("eglCreateWindowSurface failed");
+        return;
+    }
+
+    //4 创建关联上下文
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+    //EGL_NO_CONTEXT表示不需要多个设备共享上下文
+    EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
+    if (context == EGL_NO_CONTEXT) {
+        LOGD("eglCreateContext failed");
+        return;
+    }
+    //将egl和opengl关联
+    //两个surface一个读一个写。第二个一般用来离线渲染？
+    if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
+        LOGD("eglMakeCurrent failed");
+        return;
+    }
+
+    GLint vsh = initShader(vertexSimpleShapeWithColor, GL_VERTEX_SHADER);
+    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
+
+    //创建渲染程序
+    GLint program = glCreateProgram();
+    if (program == 0) {
+        LOGD("glCreateProgram failed");
+        return;
+    }
+
+    //向渲染程序中加入着色器
+    glAttachShader(program, vsh);
+    glAttachShader(program, fsh);
+
+    //链接程序
+    glLinkProgram(program);
+    GLint status = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == 0) {
+        LOGD("glLinkProgram failed");
+        return;
+    }
+    LOGD("glLinkProgram success");
+    //链接成功后，着色器对象就不需要了，所以要及时释放着色器对象
+    glDeleteShader(vsh);
+    glDeleteShader(fsh);
+    //激活渲染程序
+    glUseProgram(program);
+
+    static float triangleVerWithColor[] = {
+            0.0f, 0.8f, 0.0f,//顶点
+            1.0, 0.0, 0.0,//颜色
+            -0.8f, -0.8f, 0.0f,//顶点
+            0.0, 1.0, 0.0,//颜色
+            0.8f, -0.8f, 0.0f,//顶点
+            0.0, 0.0, 1.0,//颜色
+    };
+
+//    static float triangleVer[] = {
+//            0.0f, 0.8f, 0.0f,//顶点
+//            -0.8f, -0.8f, 0.0f,//顶点
+//            0.8f, -0.8f, 0.0f,//顶点
+//    };
+//
+//    static float colors[] = {
+//            1.0, 0.0, 0.0,//颜色
+//            0.0, 1.0, 0.0,//颜色
+//            0.0, 0.0, 1.0,//颜色
+//    };
+
+//    GLuint apos = static_cast<GLuint>(glGetAttribLocation(program, "aPosition"));
+
+    unsigned int VBOs[1];
+//    unsigned int VAOs[1];
+//    glGenVertexArrays(1, VAOs); // we can also generate multiple VAOs or buffers at the same time
+    glGenBuffers(1, VBOs);
+
+//    glBindVertexArray(VAOs[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVerWithColor), triangleVerWithColor, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 24, (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 24, (void*)(3*4));
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    //窗口显示，交换双缓冲区
+    eglSwapBuffers(display, winSurface);
+
+
+//    glDeleteVertexArrays(1, VAOs);
+    glDeleteBuffers(1, VBOs);
+    //释放着色器程序对象
+    glDeleteProgram(program);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithEBO(JNIEnv *env, jobject thiz,
+                                                                     jobject surface) {
+
+//1.获取原始窗口
+    //be sure to use ANativeWindow_release()
+    // * when done with it so that it doesn't leak.
+    ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
+    //获取Display
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        LOGD("egl display failed");
+        return;
+    }
+    //2.初始化egl，后两个参数为主次版本号
+    if (EGL_TRUE != eglInitialize(display, 0, 0)) {
+        LOGD("eglInitialize failed");
+        return;
+    }
+
+    //3.1 surface配置，可以理解为窗口
+    EGLConfig eglConfig;
+    EGLint configNum;
+    EGLint configSpec[] = {
+            EGL_RED_SIZE, 4,
+            EGL_GREEN_SIZE, 4,
+            EGL_BLUE_SIZE, 4,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_RENDERABLE_TYPE,EGL_OPENGL_ES3_BIT,
+            EGL_NONE
+    };
+
+    if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
+        LOGD("eglChooseConfig failed");
+        return;
+    }
+
+//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+
+    //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
+    EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
+    if (winSurface == EGL_NO_SURFACE) {
+        LOGD("eglCreateWindowSurface failed");
+        return;
+    }
+
+    //4 创建关联上下文
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+    //EGL_NO_CONTEXT表示不需要多个设备共享上下文
+    EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
+    if (context == EGL_NO_CONTEXT) {
+        LOGD("eglCreateContext failed");
+        return;
+    }
+    //将egl和opengl关联
+    //两个surface一个读一个写。第二个一般用来离线渲染？
+    if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
+        LOGD("eglMakeCurrent failed");
+        return;
+    }
+
+    GLint vsh = initShader(vertexSimpleShape, GL_VERTEX_SHADER);
+    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
+
+    //创建渲染程序
+    GLint program = glCreateProgram();
+    if (program == 0) {
+        LOGD("glCreateProgram failed");
+        return;
+    }
+
+    //向渲染程序中加入着色器
+    glAttachShader(program, vsh);
+    glAttachShader(program, fsh);
+
+    //链接程序
+    glLinkProgram(program);
+    GLint status = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == 0) {
+        LOGD("glLinkProgram failed");
+        return;
+    }
+    LOGD("glLinkProgram success");
+    //链接成功后，着色器对象就不需要了，所以要及时释放着色器对象
+    glDeleteShader(vsh);
+    glDeleteShader(fsh);
+    //激活渲染程序
+    glUseProgram(program);
+
+    float vertices[] = {
+            0.5f, 0.5f, 0.0f,   // 右上角
+            1.0, 0.0, 0.0,//颜色
+            0.5f, -0.5f, 0.0f,  // 右下角
+            0.0, 0.0, 1.0,//颜色
+            -0.5f, -0.5f, 0.0f, // 左下角
+            0.0, 1.0, 0.0,//颜色
+            -0.5f, 0.5f, 0.0f,   // 左上角
+            0.5, 0.5, 0.5,//颜色
+    };
+
+    unsigned int indices[] = {
+            // 注意索引从0开始!
+            // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
+            // 这样可以由下标代表顶点组合成矩形
+
+            0, 1, 3, // 第一个三角形
+            1, 2, 3  // 第二个三角形
+    };
+
+  //  unsigned int VBOs[1];
+//    unsigned int VAOs[1];
+//    glGenVertexArrays(1, VAOs); // we can also generate multiple VAOs or buffers at the same time
+//    glGenBuffers(1, VBOs);
+
+//    glBindVertexArray(VAOs[0]);
+//    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVerWithColor), triangleVerWithColor, GL_STATIC_DRAW);
+
+
+    unsigned int VBOs;
+    unsigned int VAOs;
+    glGenVertexArrays(1, &VAOs); // we can also generate multiple VAOs or buffers at the same time
+    glGenBuffers(1, &VBOs);
+
+    glBindVertexArray(VAOs);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+//  复制我们的索引数组到一个索引缓冲中，供OpenGL使用
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 24, (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 24, (void*)12);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+//    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    //窗口显示，交换双缓冲区
+    eglSwapBuffers(display, winSurface);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glDeleteVertexArrays(1, &VAOs);
+    glDeleteBuffers(1, &VBOs);
+    glDeleteBuffers(1, &EBO);
+    //释放着色器程序对象
+    glDeleteProgram(program);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_openglstudydemo_YuvPlayer_drawTwoTriangle(JNIEnv *env, jobject thiz,
-                                                        jobject surface) {
+                                                           jobject surface) {
 
 //1.获取原始窗口
     //be sure to use ANativeWindow_release()
@@ -283,6 +998,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTwoTriangle(JNIEnv *env, jobject 
             EGL_GREEN_SIZE, 8,
             EGL_BLUE_SIZE, 8,
             EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_RENDERABLE_TYPE,
+            EGL_OPENGL_ES3_BIT,
             EGL_NONE
     };
 

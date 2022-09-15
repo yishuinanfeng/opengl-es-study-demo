@@ -11,19 +11,19 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.Callback, GLSurfaceView.Renderer {
 
-   // private final static String PATH = "/sdcard/sintel_640_360.yuv";
+    // private final static String PATH = "/sdcard/sintel_640_360.yuv";
     private final static String PATH = "/sdcard/video1_640_272.yuv";
 
     public YuvPlayer(Context context, AttributeSet attrs) {
         super(context, attrs);
         setRenderer(this);
 
-     Log.d("YuvPlayer","YuvPlayer");
+        Log.d("YuvPlayer", "YuvPlayer");
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-     Log.d("YuvPlayer","surfaceCreated");
+        Log.d("YuvPlayer", "surfaceCreated");
         new Thread(this).start();
     }
 
@@ -39,23 +39,34 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
     @Override
     public void run() {
-     Log.d("YuvPlayer","run");
+        Log.d("YuvPlayer", "run");
 //        loadYuv(PATH,getHolder().getSurface());
 
 //     drawTwoTriangle(getHolder().getSurface());
-     drawTriangle(getHolder().getSurface());
-     Log.d("YuvPlayer","loadYuv");
+        drawTriangleWithEBO(getHolder().getSurface());
+        Log.d("YuvPlayer", "loadYuv");
     }
 
     public native void loadYuv(String url, Object surface);
 
- /**
-  * 绘制三角形的native方法
-  * @param surface
-  */
- public native void drawTriangle(Object surface);
+    /**
+     * 绘制三角形的native方法
+     *
+     * @param surface
+     */
+    public native void drawTriangle(Object surface);
 
     public native void drawTwoTriangle(Object surface);
+
+    public native void drawPoints(Object surface);
+
+    public native void drawLine(Object surface);
+
+    public native void drawTriangleWithColorPass(Object surface);
+
+    public native void drawTriangleWithBufferObj(Object surface);
+
+    public native void drawTriangleWithEBO(Object surface);
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
