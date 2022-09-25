@@ -81,6 +81,21 @@ static const char *fragSimpleShape =
         "            FragColor = vec4(vPosition.x ,vPosition.y ,vPosition.z,1.0);;\n"
         "        }";
 
+//图元被光栅化为多少片段，就被调用多少次
+static const char *fragSimpleShapeVBO =
+        "  #version 300 es\n"
+        "        precision\n"
+        "        mediump float;\n"
+        "\n"
+        "        in\n"
+        "        vec4 vTextColor;//输入的颜色\n"
+        "        out vec4 FragColor;\n"
+
+        "        void main() {\n"
+        "            //gl_FragColor是OpenGL内置的\n"
+        "            FragColor = vTextColor;\n"
+        "        }";
+
 static const char *fragSimpleUniform =
         "  #version 300 es\n"
         "        precision\n"
@@ -1011,7 +1026,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithBufferObj(JNIEnv *env
     }
 
     GLint vsh = initShader(vertexSimpleShapeWithColor, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
+    GLint fsh = initShader(fragSimpleShapeVBO, GL_FRAGMENT_SHADER);
 
     //创建渲染程序
     GLint program = glCreateProgram();
@@ -1077,6 +1092,10 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithBufferObj(JNIEnv *env
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -1084,7 +1103,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithBufferObj(JNIEnv *env
     //窗口显示，交换双缓冲区
     eglSwapBuffers(display, winSurface);
 
-
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 //    glDeleteVertexArrays(1, VAOs);
     glDeleteBuffers(1, VBOs);
     //释放着色器程序对象
