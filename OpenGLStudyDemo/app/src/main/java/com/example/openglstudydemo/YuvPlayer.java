@@ -60,7 +60,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     }
 
     private void drawableTexture() {
-        Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.shiyuanmeili)).getBitmap();
+        Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.shiyuanmeili2)).getBitmap();
         Bitmap bitmap1 = ((BitmapDrawable) getResources().getDrawable(R.drawable.liyingai)).getBitmap();
 
 //        BitmapFactory.Options options1 = new BitmapFactory.Options();
