@@ -33,10 +33,12 @@ static const char *fragSimpleTexture =
         "        out vec4 FragColor;\n"
         "        //传入的纹理\n"
         "        uniform sampler2D ourTexture;\n"
+        "        uniform sampler2D ourTexture1;\n"
 
         "        void main() {\n"
         "            //gl_FragColor是OpenGL内置的\n"
-        "            FragColor = texture(ourTexture, TexCoord);\n"
+//        "            FragColor = texture(ourTexture, TexCoord);\n"
+        "            FragColor = mix(texture(ourTexture, TexCoord), texture(ourTexture1, TexCoord), 0.5);\n"
         "        }";
 
 #define GET_STR(x) #x
@@ -1763,7 +1765,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz, jobject bitmap,
+Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz, jobject bitmap
+                                                       ,jobject bitmap1,
                                                        jobject surface) {
 
     //LOGD("drawTexture width:%d,height:%d", width, height);
@@ -1853,10 +1856,10 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
 
     float vertices[] = {
             // positions         // texture coords
-            0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // top right
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
-            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f  // top left
+            0.8f, 0.4f, 0.0f, 1.0f, 1.0f, // top right
+            0.8f, -0.4f, 0.0f, 1.0f, 0.0f, // bottom right
+            -0.8f, -0.4f, 0.0f, 0.0f, 0.0f, // bottom left
+            -0.8f, 0.4f, 0.0f, 0.0f, 1.0f  // top left
     };
     unsigned int indices[] = {
             0, 1, 3, // first triangle
@@ -1900,7 +1903,19 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
 
     LOGD("bitmap width:%d,height:%d" ,bmpInfo.width,bmpInfo.height);
 
-    if (bmpPixels == nullptr){
+    AndroidBitmapInfo bmpInfo1;
+    void *bmpPixels1;
+
+    if (AndroidBitmap_getInfo(env, bitmap1, &bmpInfo1) < 0) {
+        LOGD("AndroidBitmap_getInfo() failed ! ");
+        return;
+    }
+
+    AndroidBitmap_lockPixels(env, bitmap1, &bmpPixels1);
+
+    LOGD("bitmap width:%d,height:%d" ,bmpInfo1.width,bmpInfo1.height);
+
+    if (bmpPixels == nullptr || bmpPixels1 == nullptr){
         return;
     }
 
@@ -1908,8 +1923,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     // load and create a texture
     // -------------------------
     unsigned int texture1, texture2;
-    // texture 1
-    // ---------
+    //-------------------- texture1的配置start ------------------------------
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
     // set the texture wrapping parameters（配置纹理环绕）
@@ -1925,27 +1939,37 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load image, create texture and generate mipmaps
 
-
-
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, bmpPixels);
     AndroidBitmap_unlockPixels(env, bitmap);
-
-//    glGenTextures(1, &texture2);
-//    glBindTexture(GL_TEXTURE_2D, texture2);
-//    // set the texture wrapping parameters
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//    // set texture filtering parameters
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//    glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
-//    glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
+    //-------------------- texture1的配置end ------------------------------
 
 
+    //-------------------- texture2的配置start ------------------------------
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo1.width, bmpInfo1.height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, bmpPixels1);
+    AndroidBitmap_unlockPixels(env, bitmap1);
 
+    //-------------------- texture2的配置end ------------------------------
+
+    //对着色器中的纹理单元变量进行赋值
+    glUniform1i(glGetUniformLocation(program, "ourTexture"), 0);
+    glUniform1i(glGetUniformLocation(program, "ourTexture1"), 1);
+
+    //将纹理单元和纹理对象进行绑定
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -1957,8 +1981,6 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
 
     //窗口显示，交换双缓冲区
     eglSwapBuffers(display, winSurface);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

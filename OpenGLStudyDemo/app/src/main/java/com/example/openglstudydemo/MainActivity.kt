@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val bitmap = (resources.getDrawable(R.drawable.liyingai1) as BitmapDrawable).bitmap
+//        val bitmap = (resources.getDrawable(R.drawable.liyingai1) as BitmapDrawable).bitmap
 //        findViewById<ImageView>(R.id.img).setImageBitmap(bitmap)
         // Example of a call to a native method
 //        TextView tv = findViewById(R.id.sample_text);
