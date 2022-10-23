@@ -22,8 +22,8 @@ static const char *vertexSimpleTexture =
         "        void main() {\n"
         "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
         "            gl_Position = aPosition;\n"
-                "            TexCoord = vec2(aTexCoord.x, 1.0 - aTexCoord.y);\n"
-//                "            TexCoord = aTexCoord;\n"
+        "            TexCoord = vec2(aTexCoord.x, 1.0 - aTexCoord.y);\n"
+        //                "            TexCoord = aTexCoord;\n"
         "        }";
 
 //图元被光栅化为多少片段，就被调用多少次
@@ -38,7 +38,7 @@ static const char *fragSimpleTexture =
 
         "        void main() {\n"
         "            //gl_FragColor是OpenGL内置的\n"
-//        "            FragColor = texture(ourTexture, TexCoord);\n"
+        //        "            FragColor = texture(ourTexture, TexCoord);\n"
         "            FragColor = mix(texture(ourTexture, TexCoord), texture(ourTexture1, TexCoord), 0.5);\n"
         "        }";
 
@@ -195,9 +195,9 @@ static const char *fragYUV420P = GET_STR(
             vec3 rgb;
             //分别取yuv各个分量的采样纹理（r表示？）
             //
-            yuv.x = texture2D(yTexture, vTextCoord).g;
+            yuv.x = texture2D(yTexture, vTextCoord).r;
             yuv.y = texture2D(uTexture, vTextCoord).g - 0.5;
-            yuv.z = texture2D(vTexture, vTextCoord).g - 0.5;
+            yuv.z = texture2D(vTexture, vTextCoord).b - 0.5;
             rgb = mat3(
                     1.0, 1.0, 1.0,
                     0.0, -0.39465, 2.03211,
@@ -1507,21 +1507,25 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTwoTriangle(JNIEnv *env, jobject 
     eglSwapBuffers(display, winSurface);
 }
 
+#include <android/asset_manager_jni.h>
+#include <android/asset_manager.h>
+
+
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, jstring jUrl,
-                                                   jobject surface) {
+Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
+                                                   jobject surface, jobject assetManager) {
     LOGD("loadYuv", "a");
 
 
-    const char *url = env->GetStringUTFChars(jUrl, 0);
-
-    FILE *fp = fopen(url, "rb");
-    if (!fp) {
-        LOGD("oepn file %s fail", url);
-        return;
-    }
-    LOGD("open ulr is %s", url);
+//    const char *url = env->GetStringUTFChars(jUrl, 0);
+//
+//    FILE *fp = fopen(url, "rb");
+//    if (!fp) {
+//        LOGD("oepn file %s fail", url);
+//        return;
+//    }
+//    LOGD("open ulr is %s", url);
     //1.获取原始窗口
     //be sure to use ANativeWindow_release()
     // * when done with it so that it doesn't leak.
@@ -1709,25 +1713,44 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
                  NULL //纹理的数据（先不传）
     );
 
+    //创建3个buffer数组分别用于存放YUV三个分量
     unsigned char *buf[3] = {0};
     buf[0] = new unsigned char[width * height];//y
     buf[1] = new unsigned char[width * height / 4];//u
     buf[2] = new unsigned char[width * height / 4];//v
 
-    for (int i = 0; i < 10000; ++i) {
+    //得到AAssetManager对象指针
+    AAssetManager *mManeger = AAssetManager_fromJava(env, assetManager);
+    //得到AAsset对象
+    AAsset *dataAsset = AAssetManager_open(mManeger, "video1_640_272.yuv",
+                                           AASSET_MODE_STREAMING);//get file read AAsset
+    //文件总长度
+    off_t dataBufferSize = AAsset_getLength(dataAsset);
+    //纵帧数
+    long frameCount = dataBufferSize / (width * height * 3 / 2);
+
+    LOGD("frameCount:%d", frameCount);
 
 
+    for (int i = 0; i < frameCount; ++i) {
+        //读取y分量
+        int bufYRead = AAsset_read(dataAsset, buf[0],
+                                   width * height);  //begin to read data once time
+        //读取u分量
+        int bufURead = AAsset_read(dataAsset, buf[1],
+                                   width * height / 4);  //begin to read data once time
+        //读取v分量
+        int bufVRead = AAsset_read(dataAsset, buf[2],
+                                   width * height / 4);  //begin to read data once time
+        LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
 
-//        memset(buf[0], i, width * height);
-//        memset(buf[1], i, width * height/4);
-//        memset(buf[2], i, width * height/4);
-
-        //读一帧yuv420p数据
-        if (feof(fp) == 0) {
-            fread(buf[0], 1, width * height, fp);
-            fread(buf[1], 1, width * height / 4, fp);
-            fread(buf[2], 1, width * height / 4, fp);
+        //读到文件末尾了
+        if (bufYRead <= 0 || bufURead <= 0 || bufVRead <= 0) {
+            AAsset_close(dataAsset);
+            return;
         }
+
+        //  int c = dataRead(mManeger, "video1_640_272.yuv");
 
         //激活第一层纹理，绑定到创建的纹理
         //下面的width,height主要是显示尺寸？
@@ -1767,12 +1790,40 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
         usleep(4000);
     }
 
+    AAsset_close(dataAsset);
+
+}
+
+char *dataRead(AAssetManager *mManeger, const char *dataFile) {
+
+    AAsset *dataAsset = AAssetManager_open(mManeger, dataFile,
+                                           AASSET_MODE_UNKNOWN);//get file read AAsset
+    off_t dataBufferSize = AAsset_getLength(dataAsset);
+
+    int num = dataBufferSize / sizeof(float);
+
+    //float *data = (float*) malloc(num * sizeof(float));  //allocate the data, the same with the later line
+    char *data = (char *) malloc(dataBufferSize);
+
+    int numBytesRead = AAsset_read(dataAsset, data, dataBufferSize);  //begin to read data once time
+    // note: numBytesRead is the total bytes, then num = dataBufferSize/sizeof(float) = numBytesRead/sizeof(float)
+
+    if (numBytesRead < 0) {
+        LOGD("read data failed");
+    } else {
+        LOGD("numBytesRead: %d", numBytesRead);
+    }
+
+    AAsset_close(dataAsset);
+    // free(data);
+
+    return data;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz, jobject bitmap
-                                                       ,jobject bitmap1,
+Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz, jobject bitmap,
+                                                       jobject bitmap1,
                                                        jobject surface) {
 
     //LOGD("drawTexture width:%d,height:%d", width, height);
@@ -1907,7 +1958,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
 
     AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
 
-    LOGD("bitmap width:%d,height:%d" ,bmpInfo.width,bmpInfo.height);
+    LOGD("bitmap width:%d,height:%d", bmpInfo.width, bmpInfo.height);
 
     AndroidBitmapInfo bmpInfo1;
     void *bmpPixels1;
@@ -1919,9 +1970,9 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
 
     AndroidBitmap_lockPixels(env, bitmap1, &bmpPixels1);
 
-    LOGD("bitmap width:%d,height:%d" ,bmpInfo1.width,bmpInfo1.height);
+    LOGD("bitmap width:%d,height:%d", bmpInfo1.width, bmpInfo1.height);
 
-    if (bmpPixels == nullptr || bmpPixels1 == nullptr){
+    if (bmpPixels == nullptr || bmpPixels1 == nullptr) {
         return;
     }
 
@@ -1955,7 +2006,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
     // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                    GL_REPEAT);    // set texture wrapping to GL_REPEAT (default wrapping method)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // set texture filtering parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

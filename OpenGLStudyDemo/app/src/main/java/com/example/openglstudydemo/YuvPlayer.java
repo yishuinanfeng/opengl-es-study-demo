@@ -1,6 +1,7 @@
 package com.example.openglstudydemo;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -45,7 +46,9 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     @Override
     public void run() {
         Log.d("YuvPlayer", "run");
-        loadYuv(PATH,getHolder().getSurface());
+
+        AssetManager assetManager = getContext().getAssets();
+        loadYuv(getHolder().getSurface(),assetManager);
 
 //     drawTwoTriangle(getHolder().getSurface());
 //        drawTriangle(getHolder().getSurface());
@@ -79,7 +82,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
         drawTexture(bitmap,bitmap1,getHolder().getSurface());
     }
 
-    public native void loadYuv(String url, Object surface);
+    public native void loadYuv(Object surface, AssetManager assetManager);
 
     /**
      * 绘制三角形的native方法
@@ -88,23 +91,60 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
      */
     public native void drawTriangle(Object surface);
 
+    /**
+     * 绘制2个三角形
+     * @param surface
+     */
     public native void drawTwoTriangle(Object surface);
 
+    /**
+     * 绘制点
+     * @param surface
+     */
     public native void drawPoints(Object surface);
 
+    /**
+     * 绘制线
+     * @param surface
+     */
     public native void drawLine(Object surface);
 
+    /**
+     * 绘制三角形，传递指定颜色
+     * @param surface
+     */
     public native void drawTriangleWithColorPass(Object surface);
 
+    /**
+     * 使用缓冲对象绘制三角形
+     * @param surface
+     */
     public native void drawTriangleWithBufferObj(Object surface);
 
+    /**
+     * 使用EBO绘制三角形
+     * @param surface
+     */
     public native void drawTriangleWithEBO(Object surface);
 
+    /**
+     * 使用Uniform变量
+     * @param surface
+     */
     public native void drawTriangleUniform(Object surface);
 
-
+    /**
+     * 指定颜色绘制线段
+     * @param surface
+     */
     public native void drawLineWithColor(Object surface);
 
+    /**
+     * 绘制纹理
+     * @param bitmap
+     * @param bitmap1
+     * @param surface
+     */
     public native void drawTexture(Bitmap bitmap, Bitmap bitmap1, Object surface);
 
 //    public native void drawTexture(int[] bitmapArr, int w, int h, Object surface);
