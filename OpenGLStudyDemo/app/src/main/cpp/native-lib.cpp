@@ -6,6 +6,7 @@
 #include <GLES3/gl3.h>
 #include <string.h>
 #include <android/bitmap.h>
+#include <unistd.h>
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"yuvOpenGlDemo",__VA_ARGS__)
 
@@ -1647,14 +1648,14 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
     glUniform1i(glGetUniformLocation(program, "uTexture"), 1);
     glUniform1i(glGetUniformLocation(program, "vTexture"), 2);
     //纹理ID
-    GLuint texts[3] = {0};
+    GLuint textures[3] = {0};
     //创建若干个纹理对象，并且得到纹理ID
-    glGenTextures(3, texts);
+    glGenTextures(3, textures);
 
     //绑定纹理。后面的的设置和加载全部作用于当前绑定的纹理对象
     //GL_TEXTURE0、GL_TEXTURE1、GL_TEXTURE2 的就是纹理单元，GL_TEXTURE_1D、GL_TEXTURE_2D、CUBE_MAP为纹理目标
     //通过 glBindTexture 函数将纹理目标和纹理绑定后，对纹理目标所进行的操作都反映到对纹理上
-    glBindTexture(GL_TEXTURE_2D, texts[0]);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
     //缩小的过滤器
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     //放大的过滤器
@@ -1675,7 +1676,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
     );
 
     //绑定纹理
-    glBindTexture(GL_TEXTURE_2D, texts[1]);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
     //缩小的过滤器
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1692,7 +1693,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
     );
 
     //绑定纹理
-    glBindTexture(GL_TEXTURE_2D, texts[2]);
+    glBindTexture(GL_TEXTURE_2D, textures[2]);
     //缩小的过滤器
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1715,6 +1716,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
 
     for (int i = 0; i < 10000; ++i) {
 
+
+
 //        memset(buf[0], i, width * height);
 //        memset(buf[1], i, width * height/4);
 //        memset(buf[2], i, width * height/4);
@@ -1730,7 +1733,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
         //下面的width,height主要是显示尺寸？
         glActiveTexture(GL_TEXTURE0);
         //绑定y对应的纹理
-        glBindTexture(GL_TEXTURE_2D, texts[0]);
+        glBindTexture(GL_TEXTURE_2D, textures[0]);
         //替换纹理，比重新使用glTexImage2D性能高多
         glTexSubImage2D(GL_TEXTURE_2D, 0,
                         0, 0,//相对原来的纹理的offset
@@ -1741,7 +1744,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
         //激活第二层纹理，绑定到创建的纹理
         glActiveTexture(GL_TEXTURE1);
         //绑定u对应的纹理
-        glBindTexture(GL_TEXTURE_2D, texts[1]);
+        glBindTexture(GL_TEXTURE_2D, textures[1]);
         //替换纹理，比重新使用glTexImage2D性能高
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width / 2, height / 2, GL_LUMINANCE,
                         GL_UNSIGNED_BYTE,
@@ -1750,7 +1753,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
         //激活第三层纹理，绑定到创建的纹理
         glActiveTexture(GL_TEXTURE2);
         //绑定v对应的纹理
-        glBindTexture(GL_TEXTURE_2D, texts[2]);
+        glBindTexture(GL_TEXTURE_2D, textures[2]);
         //替换纹理，比重新使用glTexImage2D性能高
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width / 2, height / 2, GL_LUMINANCE,
                         GL_UNSIGNED_BYTE,
@@ -1759,6 +1762,9 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz, js
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         //窗口显示，交换双缓冲区
         eglSwapBuffers(display, winSurface);
+
+
+        usleep(4000);
     }
 
 }

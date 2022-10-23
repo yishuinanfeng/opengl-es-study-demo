@@ -45,7 +45,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     @Override
     public void run() {
         Log.d("YuvPlayer", "run");
-//        loadYuv(PATH,getHolder().getSurface());
+        loadYuv(PATH,getHolder().getSurface());
 
 //     drawTwoTriangle(getHolder().getSurface());
 //        drawTriangle(getHolder().getSurface());
@@ -54,7 +54,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 //        drawTriangleWithEBO(getHolder().getSurface());
 //        drawTriangleWithBufferObj(getHolder().getSurface());
 
-        drawableTexture();
+//        drawableTexture();
 
         Log.d("YuvPlayer", "loadYuv");
     }
