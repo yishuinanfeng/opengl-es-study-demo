@@ -185,15 +185,17 @@ static const char *fragYUV420P =
         "#version 300 es\n"
 
         "precision mediump float;\n"
-
+        "//纹理坐标\n"
         "in vec2 vTextCoord;\n"
-        //输入的yuv三个纹理
+        "//输入的yuv三个纹理\n"
         "uniform sampler2D yTexture;//采样器\n"
         "uniform sampler2D uTexture;//采样器\n"
         "uniform sampler2D vTexture;//采样器\n"
         "out vec4 FragColor;\n"
         "void main() {\n"
+        "//采样到的yuv向量数据\n"
         "   vec3 yuv;\n"
+        "//yuv转化得到的rgb向量数据\n"
         "    vec3 rgb;\n"
         "    //分别取yuv各个分量的采样纹理（r表示？）\n"
         "    yuv.x = texture(yTexture, vTextCoord).r;\n"
@@ -1792,32 +1794,6 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
 
     AAsset_close(dataAsset);
 
-}
-
-char *dataRead(AAssetManager *mManeger, const char *dataFile) {
-
-    AAsset *dataAsset = AAssetManager_open(mManeger, dataFile,
-                                           AASSET_MODE_UNKNOWN);//get file read AAsset
-    off_t dataBufferSize = AAsset_getLength(dataAsset);
-
-    int num = dataBufferSize / sizeof(float);
-
-    //float *data = (float*) malloc(num * sizeof(float));  //allocate the data, the same with the later line
-    char *data = (char *) malloc(dataBufferSize);
-
-    int numBytesRead = AAsset_read(dataAsset, data, dataBufferSize);  //begin to read data once time
-    // note: numBytesRead is the total bytes, then num = dataBufferSize/sizeof(float) = numBytesRead/sizeof(float)
-
-    if (numBytesRead < 0) {
-        LOGD("read data failed");
-    } else {
-        LOGD("numBytesRead: %d", numBytesRead);
-    }
-
-    AAsset_close(dataAsset);
-    // free(data);
-
-    return data;
 }
 
 extern "C"
