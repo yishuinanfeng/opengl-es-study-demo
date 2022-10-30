@@ -1788,8 +1788,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
         //窗口显示，交换双缓冲区
         eglSwapBuffers(display, winSurface);
 
-
-        usleep(4000);
+        //加一点延时效果避免帧率过快
+        usleep(20000);
     }
 
     AAsset_close(dataAsset);
