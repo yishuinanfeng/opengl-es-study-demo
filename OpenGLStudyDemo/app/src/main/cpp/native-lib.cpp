@@ -12,7 +12,9 @@
 #define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"yuvOpenGlDemo",__VA_ARGS__)
 
 enum enum_filter_type {
+    //灰度图
     filter_type_gray,
+    //反色
     filter_type_oppo
 
 };
@@ -1901,6 +1903,11 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
         case filter_type_gray:
             vertexShaderString = vertexShader;
             fragShaderString = fragYUV420PGray;
+            break;
+
+            case filter_type_oppo:
+            vertexShaderString = vertexShader;
+            fragShaderString = fragYUV420POppositeColor;
             break;
 
         default:

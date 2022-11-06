@@ -263,34 +263,67 @@ static const char *fragYUV420P =
 /**
  * yuv420p反色 shader
  */
-static const char *fragYUV420POppositeColor = GET_STR(
-        precision
-        mediump float;
-        varying
-        vec2 vTextCoord;
-        //输入的yuv三个纹理
-        uniform
-        sampler2D yTexture;
-        uniform
-        sampler2D uTexture;
-        uniform
-        sampler2D vTexture;
-        void main() {
-            vec3 yuv;
-            vec3 rgb;
-            //分别取yuv各个分量的采样纹理（r表示？）
-            yuv.r = texture2D(yTexture, vTextCoord).r;
-            yuv.g = texture2D(uTexture, vTextCoord).r - 0.5;
-            yuv.b = texture2D(vTexture, vTextCoord).r - 0.5;
-            rgb = mat3(
-                    1.0, 1.0, 1.0,
-                    0.0, -0.39465, 2.03211,
-                    1.13983, -0.5806, 0.0
-            ) * yuv;
-            //gl_FragColor = vec4(rgb, 1.0);
-            gl_FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);
-        }
-);
+static const char *fragYUV420POppositeColor =
+        "#version 300 es\n"
+
+        "precision mediump float;\n"
+        "//纹理坐标\n"
+        "in vec2 vTextCoord;\n"
+        "//输入的yuv三个纹理\n"
+        "uniform sampler2D yTexture;//采样器\n"
+        "uniform sampler2D uTexture;//采样器\n"
+        "uniform sampler2D vTexture;//采样器\n"
+        "out vec4 FragColor;\n"
+        "void main() {\n"
+        "//采样到的yuv向量数据\n"
+        "   vec3 yuv;\n"
+        "//yuv转化得到的rgb向量数据\n"
+        "    vec3 rgb;\n"
+        "    //分别取yuv各个分量的采样纹理（r表示？）\n"
+        "    yuv.x = texture(yTexture, vTextCoord).r;\n"
+        "   yuv.y = texture(uTexture, vTextCoord).g - 0.5;\n"
+        "    yuv.z = texture(vTexture, vTextCoord).b - 0.5;\n"
+        "   rgb = mat3(\n"
+        "            1.0, 1.0, 1.0,\n"
+        "            0.0, -0.183, 1.816,\n"
+        "            1.540, -0.459, 0.0\n"
+        "    ) * yuv;\n"
+        "    //gl_FragColor是OpenGL内置的\n"
+        "    FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);\n"
+        " }";
+
+
+
+
+
+//        GET_STR(
+//        precision
+//        mediump float;
+//        varying
+//        vec2 vTextCoord;
+//        //输入的yuv三个纹理
+//        uniform
+//        sampler2D yTexture;
+//        uniform
+//        sampler2D uTexture;
+//        uniform
+//        sampler2D vTexture;
+//        void main() {
+//            vec3 yuv;
+//            vec3 rgb;
+//            //分别取yuv各个分量的采样纹理（r表示？）
+//            yuv.r = texture2D(yTexture, vTextCoord).r;
+//            yuv.g = texture2D(uTexture, vTextCoord).r - 0.5;
+//            yuv.b = texture2D(vTexture, vTextCoord).r - 0.5;
+//            rgb = mat3(
+//                    1.0, 1.0, 1.0,
+//                    0.0, -0.39465, 2.03211,
+//                    1.13983, -0.5806, 0.0
+//            ) * yuv;
+//            //gl_FragColor = vec4(rgb, 1.0);
+//            gl_FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);
+//        }
+//);
 
 /**
  * yuv420p灰度shader
@@ -363,60 +396,116 @@ static const char *fragYUV420PGray =
 /**
  * yuv420p使用反色和灰度图轮播效果滤镜 shader
  */
-static const char *fragYUV420POppoColorAndGray = GET_STR(
-        precision
-        mediump float;
-        varying
-        vec2 vTextCoord;
-        //输入的yuv三个纹理
-        uniform
-        sampler2D yTexture;
-        uniform
-        sampler2D uTexture;
-        uniform
-        sampler2D vTexture;
-        varying float time;
-        void main() {
-            vec3 yuv;
-            vec3 rgb;
-            //分别取yuv各个分量的采样纹理（r表示？）
-            yuv.r = texture2D(yTexture, vTextCoord).r;
-            yuv.g = texture2D(uTexture, vTextCoord).r - 0.5;
-            yuv.b = texture2D(vTexture, vTextCoord).r - 0.5;
-            rgb = mat3(
-                    1.0, 1.0, 1.0,
-                    0.0, -0.39465, 2.03211,
-                    1.13983, -0.5806, 0.0
-            ) * yuv;
+static const char *fragYUV420POppoColorAndGray =
+        "#version 300 es\n"
 
-            float filterType = sin(time / 400.0);
-            if (filterType > 0.0) {
-                if (vTextCoord.x < 0.5 && vTextCoord.y < 0.5) {
-                    //反色滤镜
-                    gl_FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);
-                } else if (vTextCoord.x > 0.5 && vTextCoord.y > 0.5) {
-                    float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;
-                    gl_FragColor = vec4(gray, gray, gray, 1.0);
-                } else {
-                    gl_FragColor = vec4(rgb, 1.0);
+        "precision mediump float;\n"
+        "//纹理坐标\n"
+        "in vec2 vTextCoord;\n"
+        "//输入的yuv三个纹理\n"
+        "uniform sampler2D yTexture;//采样器\n"
+        "uniform sampler2D uTexture;//采样器\n"
+        "uniform sampler2D vTexture;//采样器\n"
+        "out vec4 gl_FragColor;\n"
+        "uniform float time;"
+        "void main() {\n"
+        "//采样到的yuv向量数据\n"
+        "   vec3 yuv;\n"
+        "//yuv转化得到的rgb向量数据\n"
+        "    vec3 rgb;\n"
+        "    //分别取yuv各个分量的采样纹理（r表示？）\n"
+        "    yuv.x = texture(yTexture, vTextCoord).r;\n"
+        "   yuv.y = texture(uTexture, vTextCoord).g - 0.5;\n"
+        "    yuv.z = texture(vTexture, vTextCoord).b - 0.5;\n"
+        "   rgb = mat3(\n"
+        "            1.0, 1.0, 1.0,\n"
+        "            0.0, -0.183, 1.816,\n"
+        "            1.540, -0.459, 0.0\n"
+        "    ) * yuv;\n"
+        "    //gl_FragColor是OpenGL内置的\n"
+        "     float filterType = sin(time / 400.0);\n"
+        "            if (filterType > 0.0) {\n"
+        "                if (vTextCoord.x < 0.5 && vTextCoord.y < 0.5) {\n"
+        "                    //反色滤镜\n"
+        "                    gl_FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);\n"
+        "                } else if (vTextCoord.x > 0.5 && vTextCoord.y > 0.5) {\n"
+        "                    float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;\n"
+        "                    gl_FragColor = vec4(gray, gray, gray, 1.0);\n"
+        "                } else {\n"
+        "                    gl_FragColor = vec4(rgb, 1.0);\n"
+        "\n"
+        "                }\n"
+        "            } else {\n"
+        "                if (vTextCoord.x > 0.5 && vTextCoord.y < 0.5) {\n"
+        "                    //反色滤镜\n"
+        "                    gl_FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);\n"
+        "                } else if (vTextCoord.x < 0.5 && vTextCoord.y > 0.5) {\n"
+        "                    float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;\n"
+        "                    gl_FragColor = vec4(gray, gray, gray, 1.0);\n"
+        "                } else {\n"
+        "                    gl_FragColor = vec4(rgb, 1.0);\n"
+        "\n"
+        "                }\n"
+        "            }\n"
+        " }";
 
-                }
-            } else {
-                if (vTextCoord.x > 0.5 && vTextCoord.y < 0.5) {
-                    //反色滤镜
-                    gl_FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);
-                } else if (vTextCoord.x < 0.5 && vTextCoord.y > 0.5) {
-                    float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;
-                    gl_FragColor = vec4(gray, gray, gray, 1.0);
-                } else {
-                    gl_FragColor = vec4(rgb, 1.0);
-
-                }
-            }
 
 
-        }
-);
+//
+//        GET_STR(
+//        precision
+//        mediump float;
+//        varying
+//        vec2 vTextCoord;
+//        //输入的yuv三个纹理
+//        uniform
+//        sampler2D yTexture;
+//        uniform
+//        sampler2D uTexture;
+//        uniform
+//        sampler2D vTexture;
+//        varying float time;
+//        void main() {
+//            vec3 yuv;
+//            vec3 rgb;
+//            //分别取yuv各个分量的采样纹理（r表示？）
+//            yuv.r = texture2D(yTexture, vTextCoord).r;
+//            yuv.g = texture2D(uTexture, vTextCoord).r - 0.5;
+//            yuv.b = texture2D(vTexture, vTextCoord).r - 0.5;
+//            rgb = mat3(
+//                    1.0, 1.0, 1.0,
+//                    0.0, -0.39465, 2.03211,
+//                    1.13983, -0.5806, 0.0
+//            ) * yuv;
+//
+//            float filterType = sin(time / 400.0);
+//            if (filterType > 0.0) {
+//                if (vTextCoord.x < 0.5 && vTextCoord.y < 0.5) {
+//                    //反色滤镜
+//                    gl_FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);
+//                } else if (vTextCoord.x > 0.5 && vTextCoord.y > 0.5) {
+//                    float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;
+//                    gl_FragColor = vec4(gray, gray, gray, 1.0);
+//                } else {
+//                    gl_FragColor = vec4(rgb, 1.0);
+//
+//                }
+//            } else {
+//                if (vTextCoord.x > 0.5 && vTextCoord.y < 0.5) {
+//                    //反色滤镜
+//                    gl_FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);
+//                } else if (vTextCoord.x < 0.5 && vTextCoord.y > 0.5) {
+//                    float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;
+//                    gl_FragColor = vec4(gray, gray, gray, 1.0);
+//                } else {
+//                    gl_FragColor = vec4(rgb, 1.0);
+//
+//                }
+//            }
+//
+//
+//        }
+//);
 
 /**
  * NV12 shader

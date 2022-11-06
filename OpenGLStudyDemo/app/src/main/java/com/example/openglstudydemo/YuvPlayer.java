@@ -49,7 +49,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
         AssetManager assetManager = getContext().getAssets();
 //        loadYuv(getHolder().getSurface(),assetManager);
-        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.GRAY);
+        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO);
 
 
 
