@@ -48,7 +48,10 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
         Log.d("YuvPlayer", "run");
 
         AssetManager assetManager = getContext().getAssets();
-        loadYuv(getHolder().getSurface(),assetManager);
+//        loadYuv(getHolder().getSurface(),assetManager);
+        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.GRAY);
+
+
 
 //     drawTwoTriangle(getHolder().getSurface());
 //        drawTriangle(getHolder().getSurface());
@@ -83,6 +86,16 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     }
 
     public native void loadYuv(Object surface, AssetManager assetManager);
+
+    public native void loadYuvWithFilterEffect(Object surface, AssetManager assetManager
+            ,int filterType);
+
+
+    interface FilterType{
+        int GRAY = 0;
+        int OPPO = 1;
+
+    }
 
     /**
      * 绘制三角形的native方法

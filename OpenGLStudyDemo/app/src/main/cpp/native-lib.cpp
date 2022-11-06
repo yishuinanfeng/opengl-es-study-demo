@@ -7,208 +7,17 @@
 #include <string.h>
 #include <android/bitmap.h>
 #include <unistd.h>
+#include "FragmentShader.h"
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"yuvOpenGlDemo",__VA_ARGS__)
 
-#define GET_STR(x) #x
-static const char *vertexSimpleTexture =
-        "        #version 300 es\n"
-        "        //输入的顶点坐标，会在程序指定将数据输入到该字段\n"
-        "        layout (location = 0) in vec4 aPosition;\n"
-        "        layout (location = 1) in vec2 aTexCoord;\n"
+enum enum_filter_type {
+    filter_type_gray,
+    filter_type_oppo
 
-        "        out vec2 TexCoord;"
-        "\n"
-        "        void main() {\n"
-        "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
-        "            gl_Position = aPosition;\n"
-        "            TexCoord = vec2(aTexCoord.x, 1.0 - aTexCoord.y);\n"
-        //                "            TexCoord = aTexCoord;\n"
-        "        }";
+};
 
-//图元被光栅化为多少片段，就被调用多少次
-static const char *fragSimpleTexture =
-        "        #version 300 es\n"
-        "        precision mediump float;\n"
-        "        in vec2 TexCoord;\n"
-        "        out vec4 FragColor;\n"
-        "        //传入的纹理\n"
-        "        uniform sampler2D ourTexture;\n"
-        "        uniform sampler2D ourTexture1;\n"
 
-        "        void main() {\n"
-        "            //gl_FragColor是OpenGL内置的\n"
-        //        "            FragColor = texture(ourTexture, TexCoord);\n"
-        "            FragColor = mix(texture(ourTexture, TexCoord), texture(ourTexture1, TexCoord), 0.5);\n"
-        "        }";
-
-#define GET_STR(x) #x
-static const char *vertexSimpleShape =
-        "        #version 300 es\n"
-        "        layout (location = 0) \n"
-        "        in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"
-        "\n"
-        "        out\n"
-        "        vec4 vTextColor;//输出的颜色\n"
-
-        "        out\n"
-        "        vec4 vPosition;//输出的坐标\n"
-        "\n"
-        "        void main() {\n"
-        "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
-        "            gl_Position = aPosition;\n"
-        "            vPosition = aPosition;\n"
-        "            gl_PointSize = 50.0;\n"
-        //        "            vTextColor = vec4(aPosition.x ,aPosition.y ,aPosition.z,1.0);\n"
-        "        }";
-
-#define GET_STR(x) #x
-static const char *vertexSimpleShapeWithColor =
-        "        #version 300 es\n"
-        "        layout (location = 0) \n"
-        "        in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"//如果传入的向量是不够4维的，自动将前三个分量设置为0.0，最后一个分量设置为1.0
-
-        "        layout (location = 1) \n"
-        "        in vec4 aColor;//输入的顶点的颜色\n" //如果传入的向量是不够4维的，自动将前三个分量设置为0.0，最后一个分量设置为1.0
-        "\n"
-        "        out\n"
-        "        vec4 vTextColor;//输出的颜色\n"
-        "\n"
-        "        void main() {\n"
-        "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
-        "            gl_Position = aPosition;\n"
-        "            vTextColor = aColor;\n"
-        "        }";
-
-//顶点着色器，每个顶点执行一次，可以并行执行
-#define GET_STR(x) #x
-static const char *vertexShader =
-        "        #version 300 es\n"
-        "        layout (location = 0) \n"
-        "        in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"//如果传入的向量是不够4维的，自动将前三个分量设置为0.0，最后一个分量设置为1.0
-
-        "        layout (location = 1) \n"
-        "        in vec2 aTextCoord;//输入的纹理坐标，会在程序指定将数据输入到该字段\n"
-        "\n"
-        "        out\n"
-        "        vec2 vTextCoord;//输出的纹理坐标;\n"
-        "\n"
-        "        void main() {\n"
-        "            //这里其实是将上下翻转过来（因为安卓图片会自动上下翻转，所以转回来）\n"
-        "             vTextCoord = vec2(aTextCoord.x, 1.0 - aTextCoord.y);\n"
-        "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
-        "            gl_Position = aPosition;\n"
-        "        }";
-
-//图元被光栅化为多少片段，就被调用多少次
-static const char *fragSimpleShape =
-        "  #version 300 es\n"
-        "        precision\n"
-        "        mediump float;\n"
-        "\n"
-        "        in\n"
-        "        vec4 vTextColor;//输入的颜色\n"
-        "        out vec4 FragColor;\n"
-
-        "        in\n"
-        "        vec4 vPosition;//输入的坐标\n"
-
-        "        void main() {\n"
-        "            //gl_FragColor是OpenGL内置的\n"
-        "            FragColor = vec4(vPosition.x ,vPosition.y ,vPosition.z,1.0);\n"
-        "        }";
-
-//图元被光栅化为多少片段，就被调用多少次
-static const char *fragSimpleShapeWithColor =
-        "  #version 300 es\n"
-        "        precision\n"
-        "        mediump float;\n"
-        "\n"
-        "        in\n"
-        "        vec4 vTextColor;//输入的颜色\n"
-        "        out vec4 FragColor;\n"
-
-        "        in\n"
-        "        vec4 vPosition;//输入的坐标\n"
-
-        "        void main() {\n"
-        "            //gl_FragColor是OpenGL内置的\n"
-        "            FragColor = vTextColor;\n"
-        "        }";
-
-//图元被光栅化为多少片段，就被调用多少次
-static const char *fragSimpleShapeEBO =
-        "  #version 300 es\n"
-        "        precision\n"
-        "        mediump float;\n"
-        "\n"
-        "        in\n"
-        "        vec4 vTextColor;//输入的颜色\n"
-        "        out vec4 FragColor;\n"
-
-        "        in\n"
-        "        vec4 vPosition;//输入的坐标\n"
-
-        "        void main() {\n"
-        "            FragColor = vTextColor;\n"
-        //        "            FragColor = vec4(1.0 ,0.0 ,0.0 ,1.0);\n"
-        "        }";
-
-static const char *fragSimpleUniform =
-        "  #version 300 es\n"
-        "        precision\n"
-        "        mediump float;\n"
-        "\n"
-        "        uniform\n"
-        "        vec4 uTextColor;//输出的颜色\n"
-        "out vec4 FragColor;\n"
-        "\n"
-        "        void main() {\n"
-        "            FragColor = uTextColor;\n"
-        "        }";
-
-static const char *vertexSimpleUniform =
-        "        #version 300 es\n"
-        "        layout (location = 0) \n"
-        "        in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"
-        "\n"
-        //        "        uniform\n"
-        //        "        vec4 vTextColor;//输出的颜色\n"
-        "\n"
-        "        void main() {\n"
-        "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
-        "            gl_Position = aPosition;\n"
-        "        }";
-
-//图元被光栅化为多少片段，就被调用多少次
-static const char *fragYUV420P =
-        "#version 300 es\n"
-
-        "precision mediump float;\n"
-        "//纹理坐标\n"
-        "in vec2 vTextCoord;\n"
-        "//输入的yuv三个纹理\n"
-        "uniform sampler2D yTexture;//采样器\n"
-        "uniform sampler2D uTexture;//采样器\n"
-        "uniform sampler2D vTexture;//采样器\n"
-        "out vec4 FragColor;\n"
-        "void main() {\n"
-        "//采样到的yuv向量数据\n"
-        "   vec3 yuv;\n"
-        "//yuv转化得到的rgb向量数据\n"
-        "    vec3 rgb;\n"
-        "    //分别取yuv各个分量的采样纹理（r表示？）\n"
-        "    yuv.x = texture(yTexture, vTextCoord).r;\n"
-        "   yuv.y = texture(uTexture, vTextCoord).g - 0.5;\n"
-        "    yuv.z = texture(vTexture, vTextCoord).b - 0.5;\n"
-        "   rgb = mat3(\n"
-        "            1.0, 1.0, 1.0,\n"
-        "            0.0, -0.183, 1.816,\n"
-        "            1.540, -0.459, 0.0\n"
-        "    ) * yuv;\n"
-        "    //gl_FragColor是OpenGL内置的\n"
-        "    FragColor = vec4(rgb, 1.0);\n"
-        " }";
 
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -2026,3 +1835,275 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     //释放着色器程序对象
     glDeleteProgram(program);
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, jobject thiz,
+                                                                   jobject surface,
+                                                                   jobject asset_manager,
+                                                                   jint filter_type) {
+    ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
+    //获取Display
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        LOGD("egl display failed");
+        return;
+    }
+    //2.初始化egl，后两个参数为主次版本号
+    if (EGL_TRUE != eglInitialize(display, 0, 0)) {
+        LOGD("eglInitialize failed");
+        return;
+    }
+
+    //3.1 surface配置，可以理解为窗口
+    EGLConfig eglConfig;
+    EGLint configNum;
+    EGLint configSpec[] = {
+            EGL_RED_SIZE, 8,
+            EGL_GREEN_SIZE, 8,
+            EGL_BLUE_SIZE, 8,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_NONE
+    };
+
+    if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
+        LOGD("eglChooseConfig failed");
+        return;
+    }
+
+    //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
+    EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
+    if (winSurface == EGL_NO_SURFACE) {
+        LOGD("eglCreateWindowSurface failed");
+        return;
+    }
+
+    //4 创建关联上下文
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+    //EGL_NO_CONTEXT表示不需要多个设备共享上下文
+    EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
+    if (context == EGL_NO_CONTEXT) {
+        LOGD("eglCreateContext failed");
+        return;
+    }
+    //将egl和opengl关联
+    //两个surface一个读一个写。第二个一般用来离线渲染？
+    if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
+        LOGD("eglMakeCurrent failed");
+        return;
+    }
+
+    const char *vertexShaderString;
+    const char *fragShaderString;
+
+    switch (filter_type) {
+        case filter_type_gray:
+            vertexShaderString = vertexShader;
+            fragShaderString = fragYUV420PGray;
+            break;
+
+        default:
+            vertexShaderString = vertexShader;
+            fragShaderString = fragYUV420P;
+            break;
+    }
+    GLint vsh = initShader(vertexShaderString, GL_VERTEX_SHADER);
+    GLint fsh = initShader(fragShaderString, GL_FRAGMENT_SHADER);
+
+    //创建渲染程序
+    GLint program = glCreateProgram();
+    if (program == 0) {
+        LOGD("glCreateProgram failed");
+        return;
+    }
+
+    //向渲染程序中加入着色器
+    glAttachShader(program, vsh);
+    glAttachShader(program, fsh);
+
+    //链接程序
+    glLinkProgram(program);
+    GLint status = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == 0) {
+        LOGD("glLinkProgram failed");
+        return;
+    }
+    LOGD("glLinkProgram success");
+    //激活渲染程序
+    glUseProgram(program);
+
+    //加入三维顶点数据
+    static float ver[] = {
+            1.0f, -1.0f, 0.0f,
+            -1.0f, -1.0f, 0.0f,
+            1.0f, 1.0f, 0.0f,
+            -1.0f, 1.0f, 0.0f
+    };
+
+    GLuint apos = static_cast<GLuint>(glGetAttribLocation(program, "aPosition"));
+    glEnableVertexAttribArray(apos);
+    glVertexAttribPointer(apos, 3, GL_FLOAT, GL_FALSE, 0, ver);
+
+    //加入纹理坐标数据
+    static float fragment[] = {
+            1.0f, 0.0f,
+            0.0f, 0.0f,
+            1.0f, 1.0f,
+            0.0f, 1.0f
+    };
+    GLuint aTex = static_cast<GLuint>(glGetAttribLocation(program, "aTextCoord"));
+    glEnableVertexAttribArray(aTex);
+    glVertexAttribPointer(aTex, 2, GL_FLOAT, GL_FALSE, 0, fragment);
+
+    int width = 640;
+    int height = 272;
+
+    //纹理初始化
+    //对sampler变量，使用函数glUniform1i和glUniform1iv进行设置
+    glUniform1i(glGetUniformLocation(program, "yTexture"), 0);
+    glUniform1i(glGetUniformLocation(program, "uTexture"), 1);
+    glUniform1i(glGetUniformLocation(program, "vTexture"), 2);
+    //纹理ID
+    GLuint textures[3] = {0};
+    //创建若干个纹理对象，并且得到纹理ID
+    glGenTextures(3, textures);
+
+    //绑定纹理。后面的的设置和加载全部作用于当前绑定的纹理对象
+    //GL_TEXTURE0、GL_TEXTURE1、GL_TEXTURE2 的就是纹理单元，GL_TEXTURE_1D、GL_TEXTURE_2D、CUBE_MAP为纹理目标
+    //通过 glBindTexture 函数将纹理目标和纹理绑定后，对纹理目标所进行的操作都反映到对纹理上
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    //缩小的过滤器
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //放大的过滤器
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //设置纹理的格式和大小
+    // 加载纹理到 OpenGL，读入 buffer 定义的位图数据，并把它复制到当前绑定的纹理对象
+    // 当前绑定的纹理对象就会被附加上纹理图像。
+    //width,height表示每几个像素公用一个yuv元素？比如width / 2表示横向每两个像素使用一个元素？
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,//细节基本 默认0
+                 GL_LUMINANCE,//gpu内部格式 亮度，灰度图（这里就是只取一个亮度的颜色通道的意思）
+                 width,//加载的纹理宽度。最好为2的次幂(这里对y分量数据当做指定尺寸算，但显示尺寸会拉伸到全屏？)
+                 height,//加载的纹理高度。最好为2的次幂
+                 0,//纹理边框
+                 GL_LUMINANCE,//数据的像素格式 亮度，灰度图
+                 GL_UNSIGNED_BYTE,//像素点存储的数据类型
+                 NULL //纹理的数据（先不传）
+    );
+
+    //绑定纹理
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    //缩小的过滤器
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //设置纹理的格式和大小
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,//细节基本 默认0
+                 GL_LUMINANCE,//gpu内部格式 亮度，灰度图（这里就是只取一个颜色通道的意思）
+                 width / 2,//u数据数量为屏幕的4分之1
+                 height / 2,
+                 0,//边框
+                 GL_LUMINANCE,//数据的像素格式 亮度，灰度图
+                 GL_UNSIGNED_BYTE,//像素点存储的数据类型
+                 NULL //纹理的数据（先不传）
+    );
+
+    //绑定纹理
+    glBindTexture(GL_TEXTURE_2D, textures[2]);
+    //缩小的过滤器
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //设置纹理的格式和大小
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,//细节基本 默认0
+                 GL_LUMINANCE,//gpu内部格式 亮度，灰度图（这里就是只取一个颜色通道的意思）
+                 width / 2,
+                 height / 2,//v数据数量为屏幕的4分之1
+                 0,//边框
+                 GL_LUMINANCE,//数据的像素格式 亮度，灰度图
+                 GL_UNSIGNED_BYTE,//像素点存储的数据类型
+                 NULL //纹理的数据（先不传）
+    );
+
+    //创建3个buffer数组分别用于存放YUV三个分量
+    unsigned char *buf[3] = {0};
+    buf[0] = new unsigned char[width * height];//y
+    buf[1] = new unsigned char[width * height / 4];//u
+    buf[2] = new unsigned char[width * height / 4];//v
+
+    //得到AAssetManager对象指针
+    AAssetManager *mManeger = AAssetManager_fromJava(env, asset_manager);
+    //得到AAsset对象
+    AAsset *dataAsset = AAssetManager_open(mManeger, "video1_640_272.yuv",
+                                           AASSET_MODE_STREAMING);//get file read AAsset
+    //文件总长度
+    off_t dataBufferSize = AAsset_getLength(dataAsset);
+    //纵帧数
+    long frameCount = dataBufferSize / (width * height * 3 / 2);
+
+    LOGD("frameCount:%d", frameCount);
+
+
+    for (int i = 0; i < frameCount; ++i) {
+        //读取y分量
+        int bufYRead = AAsset_read(dataAsset, buf[0],
+                                   width * height);  //begin to read data once time
+        //读取u分量
+        int bufURead = AAsset_read(dataAsset, buf[1],
+                                   width * height / 4);  //begin to read data once time
+        //读取v分量
+        int bufVRead = AAsset_read(dataAsset, buf[2],
+                                   width * height / 4);  //begin to read data once time
+        LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
+
+        //读到文件末尾了
+        if (bufYRead <= 0 || bufURead <= 0 || bufVRead <= 0) {
+            AAsset_close(dataAsset);
+            return;
+        }
+
+        //  int c = dataRead(mManeger, "video1_640_272.yuv");
+
+        //激活第一层纹理，绑定到创建的纹理
+        //下面的width,height主要是显示尺寸？
+        glActiveTexture(GL_TEXTURE0);
+        //绑定y对应的纹理
+        glBindTexture(GL_TEXTURE_2D, textures[0]);
+        //替换纹理，比重新使用glTexImage2D性能高多
+        glTexSubImage2D(GL_TEXTURE_2D, 0,
+                        0, 0,//相对原来的纹理的offset
+                        width, height,//加载的纹理宽度、高度。最好为2的次幂
+                        GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                        buf[0]);
+
+        //激活第二层纹理，绑定到创建的纹理
+        glActiveTexture(GL_TEXTURE1);
+        //绑定u对应的纹理
+        glBindTexture(GL_TEXTURE_2D, textures[1]);
+        //替换纹理，比重新使用glTexImage2D性能高
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width / 2, height / 2, GL_LUMINANCE,
+                        GL_UNSIGNED_BYTE,
+                        buf[1]);
+
+        //激活第三层纹理，绑定到创建的纹理
+        glActiveTexture(GL_TEXTURE2);
+        //绑定v对应的纹理
+        glBindTexture(GL_TEXTURE_2D, textures[2]);
+        //替换纹理，比重新使用glTexImage2D性能高
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width / 2, height / 2, GL_LUMINANCE,
+                        GL_UNSIGNED_BYTE,
+                        buf[2]);
+
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        //窗口显示，交换双缓冲区
+        eglSwapBuffers(display, winSurface);
+
+        //加一点延时效果避免帧率过快
+        usleep(20000);
+    }
+
+    AAsset_close(dataAsset);
+}
+
