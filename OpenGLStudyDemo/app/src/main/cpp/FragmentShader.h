@@ -193,10 +193,90 @@ static const char *fragYUV420P =
         "   vec3 yuv;\n"
         "//yuv转化得到的rgb向量数据\n"
         "    vec3 rgb;\n"
-        "    //分别取yuv各个分量的采样纹理（r表示？）\n"
+        "    //分别取yuv各个分量的采样纹理\n"
         "    yuv.x = texture(yTexture, vTextCoord).r;\n"
         "   yuv.y = texture(uTexture, vTextCoord).g - 0.5;\n"
         "    yuv.z = texture(vTexture, vTextCoord).b - 0.5;\n"
+        "   rgb = mat3(\n"
+        "            1.0, 1.0, 1.0,\n"
+        "            0.0, -0.183, 1.816,\n"
+        "            1.540, -0.459, 0.0\n"
+        "    ) * yuv;\n"
+        "    //gl_FragColor是OpenGL内置的\n"
+        "    FragColor = vec4(rgb, 1.0);\n"
+        " }";
+
+static const char *fragYUV420PDivideTo2 =
+        "#version 300 es\n"
+
+        "precision mediump float;\n"
+        "//纹理坐标\n"
+        "in vec2 vTextCoord;\n"
+        "//输入的yuv三个纹理\n"
+        "uniform sampler2D yTexture;//采样器\n"
+        "uniform sampler2D uTexture;//采样器\n"
+        "uniform sampler2D vTexture;//采样器\n"
+        "out vec4 FragColor;\n"
+        "void main() {\n"
+        "//采样到的yuv向量数据\n"
+        "   vec3 yuv;\n"
+        "//yuv转化得到的rgb向量数据\n"
+        "    vec3 rgb;\n"
+
+        "    vec2 uv = vTextCoord.xy;\n"
+        "    float y;\n"
+        "    if (uv.y >= 0.0 && uv.y <= 0.5) {\n"
+        "        uv.y = uv.y + 0.25;\n"
+        "    }else{\n"
+        "        uv.y = uv.y - 0.25;\n"
+        "    }\n"
+        "    //分别取yuv各个分量的采样纹理\n"
+        "    yuv.x = texture(yTexture, uv).r;\n"
+        "   yuv.y = texture(uTexture, uv).g - 0.5;\n"
+        "    yuv.z = texture(vTexture, uv).b - 0.5;\n"
+        "   rgb = mat3(\n"
+        "            1.0, 1.0, 1.0,\n"
+        "            0.0, -0.183, 1.816,\n"
+        "            1.540, -0.459, 0.0\n"
+        "    ) * yuv;\n"
+        "    //gl_FragColor是OpenGL内置的\n"
+        "    FragColor = vec4(rgb, 1.0);\n"
+        " }";
+
+
+static const char *fragYUV420PDivideTo4 =
+        "#version 300 es\n"
+
+        "precision mediump float;\n"
+        "//纹理坐标\n"
+        "in vec2 vTextCoord;\n"
+        "//输入的yuv三个纹理\n"
+        "uniform sampler2D yTexture;//采样器\n"
+        "uniform sampler2D uTexture;//采样器\n"
+        "uniform sampler2D vTexture;//采样器\n"
+        "out vec4 FragColor;\n"
+        "void main() {\n"
+        "//采样到的yuv向量数据\n"
+        "   vec3 yuv;\n"
+        "//yuv转化得到的rgb向量数据\n"
+        "    vec3 rgb;\n"
+
+        "    vec2 uv = vTextCoord.xy;\n"
+        "    if (uv.x <= 0.5) {\n"
+        "        uv.x = uv.x * 2.0;\n"
+        "    }else{\n"
+        "        uv.x = (uv.x - 0.5) * 2.0;\n"
+        "    }\n"
+        "    \n"
+        "     if (uv.y <= 0.5) {\n"
+        "           uv.y = uv.y * 2.0;\n"
+        "       }else{\n"
+        "           uv.y = (uv.y - 0.5) * 2.0;\n"
+        "       }\n"
+        "    //分别取yuv各个分量的采样纹理\n"
+        "    yuv.x = texture(yTexture, uv).r;\n"
+        "   yuv.y = texture(uTexture, uv).g - 0.5;\n"
+        "    yuv.z = texture(vTexture, uv).b - 0.5;\n"
         "   rgb = mat3(\n"
         "            1.0, 1.0, 1.0,\n"
         "            0.0, -0.183, 1.816,\n"
@@ -292,39 +372,6 @@ static const char *fragYUV420POppositeColor =
         "    FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);\n"
         " }";
 
-
-
-
-
-//        GET_STR(
-//        precision
-//        mediump float;
-//        varying
-//        vec2 vTextCoord;
-//        //输入的yuv三个纹理
-//        uniform
-//        sampler2D yTexture;
-//        uniform
-//        sampler2D uTexture;
-//        uniform
-//        sampler2D vTexture;
-//        void main() {
-//            vec3 yuv;
-//            vec3 rgb;
-//            //分别取yuv各个分量的采样纹理（r表示？）
-//            yuv.r = texture2D(yTexture, vTextCoord).r;
-//            yuv.g = texture2D(uTexture, vTextCoord).r - 0.5;
-//            yuv.b = texture2D(vTexture, vTextCoord).r - 0.5;
-//            rgb = mat3(
-//                    1.0, 1.0, 1.0,
-//                    0.0, -0.39465, 2.03211,
-//                    1.13983, -0.5806, 0.0
-//            ) * yuv;
-//            //gl_FragColor = vec4(rgb, 1.0);
-//            gl_FragColor = vec4(vec3(1.0 - rgb.r, 1.0 - rgb.g, 1.0 - rgb.b), 1.0);
-//        }
-//);
-
 /**
  * yuv420p灰度shader
  */
@@ -357,41 +404,6 @@ static const char *fragYUV420PGray =
         "     float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;\n"
         "     FragColor = vec4(gray, gray, gray, 1.0);;\n"
         " }";
-
-
-
-
-
-
-
-//        GET_STR(
-//        precision
-//        mediump float;
-//        varying
-//        vec2 vTextCoord;
-//        //输入的yuv三个纹理
-//        uniform
-//        sampler2D yTexture;
-//        uniform
-//        sampler2D uTexture;
-//        uniform
-//        sampler2D vTexture;
-//        void main() {
-//            vec3 yuv;
-//            vec3 rgb;
-//            //分别取yuv各个分量的采样纹理（r表示？）
-//            yuv.r = texture2D(yTexture, vTextCoord).r;
-//            yuv.g = texture2D(uTexture, vTextCoord).r - 0.5;
-//            yuv.b = texture2D(vTexture, vTextCoord).r - 0.5;
-//            rgb = mat3(
-//                    1.0, 1.0, 1.0,
-//                    0.0, -0.39465, 2.03211,
-//                    1.13983, -0.5806, 0.0
-//            ) * yuv;
-//            float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;
-//            gl_FragColor = vec4(gray, gray, gray, 1.0);
-//        }
-//);
 
 /**
  * yuv420p使用反色和灰度图轮播效果滤镜 shader
@@ -727,7 +739,8 @@ static const char *fragYUV420PSplash = GET_STR(
             if (uAdditionalColor < 0.0) {
                 uAdditionalColor = 0.0;
             }
-            gl_FragColor = vec4(rgb.r + uAdditionalColor, rgb.g + uAdditionalColor, rgb.b + uAdditionalColor, 1.0);
+            gl_FragColor = vec4(rgb.r + uAdditionalColor, rgb.g + uAdditionalColor,
+                                rgb.b + uAdditionalColor, 1.0);
         }
 );
 
@@ -766,7 +779,8 @@ static const char *fragNV21Splash = GET_STR(
                 uAdditionalColor = 0.0;
             }
 
-            gl_FragColor = vec4(rgb.r + uAdditionalColor, rgb.g + uAdditionalColor, rgb.b + uAdditionalColor, 1.0);
+            gl_FragColor = vec4(rgb.r + uAdditionalColor, rgb.g + uAdditionalColor,
+                                rgb.b + uAdditionalColor, 1.0);
         }
 );
 
@@ -808,7 +822,8 @@ static const char *fragNV12Splash = GET_STR(
                 uAdditionalColor = 0.0;
             }
 
-            gl_FragColor = vec4(rgb.r + uAdditionalColor, rgb.g + uAdditionalColor, rgb.b + uAdditionalColor, 1.0);
+            gl_FragColor = vec4(rgb.r + uAdditionalColor, rgb.g + uAdditionalColor,
+                                rgb.b + uAdditionalColor, 1.0);
         }
 );
 
@@ -983,58 +998,58 @@ static const char *fragNV21Soul = GET_STR(
 static const char *fragNV12Soul = GET_STR(
         precision
         mediump float;
-varying
-        vec2
-vTextCoord;
+        varying
+                vec2
+        vTextCoord;
 //输入的yuv三个纹理
-uniform
-        sampler2D
-yTexture;
-uniform
-        sampler2D
-uvTexture;
-uniform float uAlpha;
-uniform float uScale;
+        uniform
+                sampler2D
+        yTexture;
+        uniform
+                sampler2D
+        uvTexture;
+        uniform float uAlpha;
+        uniform float uScale;
 
-void main() {
-    vec3 yuv;
-    vec3 frontYuv;
-    vec3 rgb;
-    vec3 frontRgb;
-    vec2 frontTextCoord = vTextCoord.xy;
-    //分别取yuv各个分量的采样纹理（r表示？）
-    //这里texture2D(yTexture, vTextCoord).r取.g.b效果也是一样的
-    yuv.r = texture2D(yTexture, vTextCoord).r;
-    yuv.g = texture2D(uvTexture, vTextCoord).r - 0.5;
-    //NV12会把V采样到a通道
-    yuv.b = texture2D(uvTexture, vTextCoord).a - 0.5;
-    rgb = mat3(
-            1.0, 1.0, 1.0,
-            0.0, -0.39465, 2.03211,
-            1.13983, -0.5806, 0.0
-    ) * yuv;
+        void main() {
+            vec3 yuv;
+            vec3 frontYuv;
+            vec3 rgb;
+            vec3 frontRgb;
+            vec2 frontTextCoord = vTextCoord.xy;
+            //分别取yuv各个分量的采样纹理（r表示？）
+            //这里texture2D(yTexture, vTextCoord).r取.g.b效果也是一样的
+            yuv.r = texture2D(yTexture, vTextCoord).r;
+            yuv.g = texture2D(uvTexture, vTextCoord).r - 0.5;
+            //NV12会把V采样到a通道
+            yuv.b = texture2D(uvTexture, vTextCoord).a - 0.5;
+            rgb = mat3(
+                    1.0, 1.0, 1.0,
+                    0.0, -0.39465, 2.03211,
+                    1.13983, -0.5806, 0.0
+            ) * yuv;
 
-    // 将纹理坐标中心转成(0.0, 0.0)再做缩放
-    vec2 center = vec2(0.5, 0.5);
-    frontTextCoord = frontTextCoord - center;
-    frontTextCoord = frontTextCoord / uScale;
-    frontTextCoord = frontTextCoord + center;
+            // 将纹理坐标中心转成(0.0, 0.0)再做缩放
+            vec2 center = vec2(0.5, 0.5);
+            frontTextCoord = frontTextCoord - center;
+            frontTextCoord = frontTextCoord / uScale;
+            frontTextCoord = frontTextCoord + center;
 
-    frontYuv.r = texture2D(yTexture, frontTextCoord).r;
-    frontYuv.g = texture2D(uvTexture, frontTextCoord).r - 0.5;
-    //NV12会把V采样到a通道
-    frontYuv.b = texture2D(uvTexture, frontTextCoord).a - 0.5;
-    frontRgb = mat3(
-            1.0, 1.0, 1.0,
-            0.0, -0.39465, 2.03211,
-            1.13983, -0.5806, 0.0
-    ) * frontYuv;
+            frontYuv.r = texture2D(yTexture, frontTextCoord).r;
+            frontYuv.g = texture2D(uvTexture, frontTextCoord).r - 0.5;
+            //NV12会把V采样到a通道
+            frontYuv.b = texture2D(uvTexture, frontTextCoord).a - 0.5;
+            frontRgb = mat3(
+                    1.0, 1.0, 1.0,
+                    0.0, -0.39465, 2.03211,
+                    1.13983, -0.5806, 0.0
+            ) * frontYuv;
 
-    //gl_FragColor = vec4(frontRgb, 1.0);
+            //gl_FragColor = vec4(frontRgb, 1.0);
 
-    // 线性混合
-    gl_FragColor = mix(vec4(rgb, 1.0), vec4(frontRgb, 1.0), 1.0 - fract(uScale));
-}
+            // 线性混合
+            gl_FragColor = mix(vec4(rgb, 1.0), vec4(frontRgb, 1.0), 1.0 - fract(uScale));
+        }
 
 );
 
@@ -1140,8 +1155,10 @@ static const char *fragNV12Shake = GET_STR(
             //右下片段
             vec3 rgbRightBottom;
             //设置了位置偏移采样到的颜色
-            vec2 leftTopTexCoord = vec2(vTextCoord.x + uTextureCoordOffset, vTextCoord.y + uTextureCoordOffset);
-            vec2 rightBottomTexCoord = vec2(vTextCoord.x - uTextureCoordOffset, vTextCoord.y - uTextureCoordOffset);
+            vec2 leftTopTexCoord = vec2(vTextCoord.x + uTextureCoordOffset,
+                                        vTextCoord.y + uTextureCoordOffset);
+            vec2 rightBottomTexCoord = vec2(vTextCoord.x - uTextureCoordOffset,
+                                            vTextCoord.y - uTextureCoordOffset);
             //分别取yuv各个分量的采样纹理（r表示？）
             //这里texture2D(yTexture, vTextCoord).r取.g.b效果也是一样的
             yuv.r = texture2D(yTexture, vTextCoord).r;

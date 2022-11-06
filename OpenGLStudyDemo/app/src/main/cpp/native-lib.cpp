@@ -15,7 +15,11 @@ enum enum_filter_type {
     //灰度图
     filter_type_gray,
     //反色
-    filter_type_oppo
+    filter_type_oppo,
+    //2分屏
+    filter_type_divide_2,
+    //4分屏
+    filter_type_divide_4
 
 };
 
@@ -1905,9 +1909,18 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
             fragShaderString = fragYUV420PGray;
             break;
 
-            case filter_type_oppo:
+        case filter_type_oppo:
             vertexShaderString = vertexShader;
             fragShaderString = fragYUV420POppositeColor;
+            break;
+
+        case filter_type_divide_2:
+            vertexShaderString = vertexShader;
+            fragShaderString = fragYUV420PDivideTo2;
+            break;
+        case filter_type_divide_4:
+            vertexShaderString = vertexShader;
+            fragShaderString = fragYUV420PDivideTo4;
             break;
 
         default:
