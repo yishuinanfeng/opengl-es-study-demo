@@ -16,6 +16,8 @@ enum enum_filter_type {
     filter_type_gray,
     //反色
     filter_type_oppo,
+    //反色灰度
+    filter_type_oppo_gray,
     //2分屏
     filter_type_divide_2,
     //4分屏
@@ -1913,6 +1915,10 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
             vertexShaderString = vertexShader;
             fragShaderString = fragYUV420POppositeColor;
             break;
+        case filter_type_oppo_gray:
+            vertexShaderString = vertexShader;
+            fragShaderString = fragYUV420POppoColorAndGray;
+            break;
 
         case filter_type_divide_2:
             vertexShaderString = vertexShader;
@@ -1930,6 +1936,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
     }
     GLint vsh = initShader(vertexShaderString, GL_VERTEX_SHADER);
     GLint fsh = initShader(fragShaderString, GL_FRAGMENT_SHADER);
+
+    //todo 时间变量使用遍历循环中的第几帧
 
     //创建渲染程序
     GLint program = glCreateProgram();

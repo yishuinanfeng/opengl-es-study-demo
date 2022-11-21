@@ -48,9 +48,11 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
         Log.d("YuvPlayer", "run");
 
         AssetManager assetManager = getContext().getAssets();
-//        loadYuv(getHolder().getSurface(),assetManager);
-//        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO);
-        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_2);
+    //    loadYuv(getHolder().getSurface(),assetManager);
+   //   loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO);
+ //      loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.GRAY);
+       loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO_GRAY);
+//        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_2);
 //        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_4);
 
 
@@ -96,8 +98,9 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     interface FilterType{
         int GRAY = 0;
         int OPPO = 1;
-        int DIVIDE_TO_2 = 2;
-        int DIVIDE_TO_4 = 3;
+        int OPPO_GRAY = 2;
+        int DIVIDE_TO_2 = 3;
+        int DIVIDE_TO_4 = 4;
 
     }
 
