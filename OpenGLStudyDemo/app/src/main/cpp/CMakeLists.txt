@@ -4,7 +4,8 @@
 # Sets the minimum version of CMake required to build the native library.
 cmake_minimum_required(VERSION 3.4.1)
 
-
+include_directories(${CMAKE_SOURCE_DIR}/glm)
+include_directories(${CMAKE_SOURCE_DIR}/glm/glm)
 ####################################  Darren教程
 #设置变量
 #SET(SRC_LIST native-lib.cpp)

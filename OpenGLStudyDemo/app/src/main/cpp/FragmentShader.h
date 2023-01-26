@@ -88,12 +88,14 @@ static const char *vertexShader =
         "\n"
         "        out\n"
         "        vec2 vTextCoord;//输出的纹理坐标;\n"
+        "        uniform mat4 uScaleMatrix;"//缩放矩阵
         "\n"
         "        void main() {\n"
         "            //这里其实是将上下翻转过来（因为安卓图片会自动上下翻转，所以转回来）\n"
         "             vTextCoord = vec2(aTextCoord.x, 1.0 - aTextCoord.y);\n"
         "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
         "            gl_Position = aPosition;\n"
+  //      "            gl_Position = uScaleMatrix * aPosition;;\n"
         "        }";
 
 //图元被光栅化为多少片段，就被调用多少次
@@ -288,28 +290,29 @@ static const char *fragYUV420PDivideTo4 =
 
 
 /**
- * 专门存放各种shader的文件
+ * 可缩放的顶点着色器
  */
-//#define GET_STR(x) #x
-//static const char *vertexShader = GET_STR(
-//        uniform float u_time;
-//        varying float time;
-//        attribute
-//        vec4 aPosition;//输入的顶点坐标
-//        attribute
-//        vec2 aTextCoord;//输入的纹理坐标
-//        varying
-//        vec2 vTextCoord;//输出的纹理坐标
-//        //缩放矩阵
-//        uniform
-//        mat4 uScaleMatrix;
-//        void main() {
-//            //这里其实是将上下翻转过来（因为安卓图片会自动上下翻转，所以转回来）
-//            vTextCoord = vec2(aTextCoord.x, 1.0 - aTextCoord.y);
-//            gl_Position = uScaleMatrix * aPosition;
-//            time = u_time;
-//        }
-//);
+#define GET_STR(x) #x
+static const char *scaleVertexShader =
+        "#version 300 es\n"
+        "uniform float u_time;"
+        "varying float time;"
+        "attribute"
+        "vec4 aPosition;//输入的顶点坐标"
+        "attribute"
+        "vec2 aTextCoord;//输入的纹理坐标"
+        "varying"
+        "vec2 vTextCoord;//输出的纹理坐标"
+        //缩放矩阵
+        "uniform"
+        "mat4 uScaleMatrix;"
+        "void main() {"
+        "   //这里其实是将上下翻转过来（因为安卓图片会自动上下翻转，所以转回来）"
+        "    vTextCoord = vec2(aTextCoord.x, 1.0 - aTextCoord.y);"
+        "    gl_Position = uScaleMatrix * aPosition;"
+        "    time = u_time;"
+        " }"
+;
 /**
  * 普通yuv420p shader
  */

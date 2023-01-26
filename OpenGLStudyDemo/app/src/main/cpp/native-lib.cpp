@@ -8,6 +8,12 @@
 #include <android/bitmap.h>
 #include <unistd.h>
 #include "FragmentShader.h"
+#include "glm/glm/gtc/matrix_transform.hpp"
+#include "glm/glm/ext.hpp"
+#include "glm/glm/detail/_noise.hpp"
+
+using namespace glm;
+
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"yuvOpenGlDemo",__VA_ARGS__)
 
@@ -1328,6 +1334,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTwoTriangle(JNIEnv *env, jobject 
 
 #include <android/asset_manager_jni.h>
 #include <android/asset_manager.h>
+#include <gtc/type_ptr.hpp>
 
 
 extern "C"
@@ -1984,6 +1991,10 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
     GLuint aTex = static_cast<GLuint>(glGetAttribLocation(program, "aTextCoord"));
     glEnableVertexAttribArray(aTex);
     glVertexAttribPointer(aTex, 2, GL_FLOAT, GL_FALSE, 0, fragment);
+
+//    GLint uScaleMatrixLocation = glGetUniformLocation(program, "uScaleMatrix");
+//    mat4 scaleMatrix;
+//    glUniformMatrix4fv(uScaleMatrixLocation, 1, GL_FALSE, glm::value_ptr(scaleMatrix));
 
     int width = 640;
     int height = 272;
