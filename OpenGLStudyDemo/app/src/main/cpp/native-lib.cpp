@@ -31,7 +31,9 @@ enum enum_filter_type {
 
 };
 
-
+#define SCALE_DURATION  600
+#define SKIP_DURATION  100
+#define MAX_DIFF_SCALE  2.0f
 
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -44,6 +46,8 @@ Java_com_example_openglstudydemo_MainActivity_stringFromJNI(
 
 GLint initShader(const char *source, int type);
 
+
+float getTransformMatrix(int scaleDuration, int frame);
 
 GLint initShader(const char *source, GLint type) {
     //创建shader
@@ -196,6 +200,32 @@ Java_com_example_openglstudydemo_YuvPlayer_drawPoints(JNIEnv *env, jobject thiz,
     glDrawArrays(GL_POINTS, 0, 3);
     //窗口显示，交换双缓冲区
     eglSwapBuffers(display, winSurface);
+}
+
+float getTransformMatrix(int scaleDuration, int frame) {
+    int remainder = frame % scaleDuration;
+    LOGD("ScaleFilter onDraw remainder:%d", remainder);
+    float ratio;
+    //算出pts对scaleTime区取余的余数占scaleTime多少
+    if (remainder < scaleDuration / 2) {
+        ratio = remainder * 1.0F / scaleDuration;
+//    } else if (remainder > scaleDuration / 2) {
+//        ratio = 1;
+//    } else
+    } else {
+        //缩小速度加速度增快
+        ratio = static_cast<float>(pow(remainder * 1.0F / scaleDuration, 2));
+        //  ratio = (1.0F - remainder * 1.0F / scaleDuration);
+    }
+
+    //最大缩放倍数为1.5F
+    float scale = MAX_DIFF_SCALE * ratio;
+    if (scale < 1) {
+        scale = 1;
+    }
+    LOGD("scale:%f", scale);
+    return scale;
+
 }
 
 extern "C"
@@ -1850,6 +1880,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     //释放着色器程序对象
     glDeleteProgram(program);
 }
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, jobject thiz,
@@ -1992,9 +2023,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
     glEnableVertexAttribArray(aTex);
     glVertexAttribPointer(aTex, 2, GL_FLOAT, GL_FALSE, 0, fragment);
 
-//    GLint uScaleMatrixLocation = glGetUniformLocation(program, "uScaleMatrix");
-//    mat4 scaleMatrix;
-//    glUniformMatrix4fv(uScaleMatrixLocation, 1, GL_FALSE, glm::value_ptr(scaleMatrix));
+    GLint uScaleMatrixLocation = glGetUniformLocation(program, "uMatrix");
+    mat4 scaleMatrix = glm::mat4(1.0f);
 
     int width = 640;
     int height = 272;
@@ -2084,6 +2114,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
 
     LOGD("frameCount:%d", frameCount);
 
+    int scaleDuration = frameCount / 10;
 
     for (int i = 0; i < frameCount; ++i) {
         //读取y分量
@@ -2102,6 +2133,18 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
             AAsset_close(dataAsset);
             return;
         }
+
+        float scale = getTransformMatrix(scaleDuration, i);
+
+        //vec3(scale)的3个分量分别乘以scaleMatrix的前三行，第四行齐次坐标不变
+        mat4 resultMatrix = glm::scale(scaleMatrix, vec3(scale));
+        //最后一个参数是围绕哪个向量旋转
+//        resultMatrix = glm::rotate(scaleMatrix, glm::radians(180.0f - scale * 180.0f),
+//                                   glm::vec3(0.0f, 0.0f, 1.0f));
+//        resultMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.0f));
+        glUniformMatrix4fv(uScaleMatrixLocation, 1, GL_FALSE, glm::value_ptr(resultMatrix));
+
+//        LOGD("resultMatrix:%d,bufURead:%d,bufVRead:%d", resultMatrix, , bufVRead);
 
         //  int c = dataRead(mManeger, "video1_640_272.yuv");
 

@@ -88,14 +88,14 @@ static const char *vertexShader =
         "\n"
         "        out\n"
         "        vec2 vTextCoord;//输出的纹理坐标;\n"
-        "        uniform mat4 uScaleMatrix;"//缩放矩阵
+        "        uniform mat4 uMatrix;"//变换矩阵
         "\n"
         "        void main() {\n"
         "            //这里其实是将上下翻转过来（因为安卓图片会自动上下翻转，所以转回来）\n"
         "             vTextCoord = vec2(aTextCoord.x, 1.0 - aTextCoord.y);\n"
         "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
-        "            gl_Position = aPosition;\n"
-  //      "            gl_Position = uScaleMatrix * aPosition;;\n"
+    //    "            gl_Position = aPosition;\n"
+        "            gl_Position = uMatrix * aPosition;;\n"
         "        }";
 
 //图元被光栅化为多少片段，就被调用多少次
@@ -305,11 +305,11 @@ static const char *scaleVertexShader =
         "vec2 vTextCoord;//输出的纹理坐标"
         //缩放矩阵
         "uniform"
-        "mat4 uScaleMatrix;"
+        "mat4 uMatrix;"
         "void main() {"
         "   //这里其实是将上下翻转过来（因为安卓图片会自动上下翻转，所以转回来）"
         "    vTextCoord = vec2(aTextCoord.x, 1.0 - aTextCoord.y);"
-        "    gl_Position = uScaleMatrix * aPosition;"
+        "    gl_Position = uMatrix * aPosition;"
         "    time = u_time;"
         " }"
 ;
