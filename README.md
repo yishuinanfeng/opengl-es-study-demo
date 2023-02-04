@@ -1,6 +1,6 @@
 # opengl-es-study-demo
 opengl es study demo for freshman to learn opengl es quickly.
-一个OpenGL es入门项目，帮助初学者更快地入门学习。
+一个OpenGL es入门项目，帮助初学者更快地入门学习。主要内容是基础图形绘制、缓冲对象使用、渲染视频、视频添加滤镜效果。
 
 相关博客系列：https://juejin.cn/post/7119135465302654984
 
