@@ -18,6 +18,8 @@ using namespace glm;
 #define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"yuvOpenGlDemo",__VA_ARGS__)
 
 enum enum_filter_type {
+    //无滤镜效果
+    filter_type_none,
     //灰度图
     filter_type_gray,
     //反色
@@ -28,7 +30,6 @@ enum enum_filter_type {
     filter_type_divide_2,
     //4分屏
     filter_type_divide_4
-
 };
 
 #define SCALE_DURATION  600
@@ -206,20 +207,19 @@ float getTransformMatrix(int scaleDuration, int frame) {
     int remainder = frame % scaleDuration;
     LOGD("ScaleFilter onDraw remainder:%d", remainder);
     float ratio;
-    //算出pts对scaleTime区取余的余数占scaleTime多少
-    if (remainder < scaleDuration / 2) {
-        ratio = remainder * 1.0F / scaleDuration;
-//    } else if (remainder > scaleDuration / 2) {
-//        ratio = 1;
-//    } else
-    } else {
-        //缩小速度加速度增快
-        ratio = static_cast<float>(pow(remainder * 1.0F / scaleDuration, 2));
-        //  ratio = (1.0F - remainder * 1.0F / scaleDuration);
-    }
+    //放大的时候是线性变换，即放大系数和时间成正比。算出每个周期的帧数占一个周期的比例
+//    if (remainder < scaleDuration / 2) {
+//        ratio = remainder * 1.0F / scaleDuration;
+//    } else {
+        //加速度增大
+        ratio = static_cast<float>(pow(remainder * 1.0F / scaleDuration, 3));
+//    }
+
+    LOGD("ratio:%f", ratio);
 
     //最大缩放倍数为1.5F
     float scale = MAX_DIFF_SCALE * ratio;
+    //在增大到到达下一个缩放周期的时候ratio变为0，scale立刻变为1，就瞬间缩小为原本大小
     if (scale < 1) {
         scale = 1;
     }
@@ -1438,7 +1438,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
         return;
     }
 
-    GLint vsh = initShader(vertexShader, GL_VERTEX_SHADER);
+    GLint vsh = initShader(vertexShaderWithMatrix, GL_VERTEX_SHADER);
     GLint fsh = initShader(fragYUV420P, GL_FRAGMENT_SHADER);
 
     //创建渲染程序
@@ -1569,8 +1569,47 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
                  NULL //纹理的数据（先不传）
     );
 
+    //列主序（column-major order）排列的。也就是说，矩阵的第一列元素在数组的前4个元素中，第二列元素在数组的第5到第8个元素中
+    //缩小0.5
+//    float arr[16] = {0.5, 0.0, 0.0,0.0,   0.0, 0.5, 0.0,0.0,    0.0, 0.0, 1.0,0.0,     0.0, 0.0, 0.0,1.0};
+    //平移1.0
+//    float arr[16] = {1.0, 0.0, 0.0,0.0,   0.0, 1.0, 0.0,0.0,    0.0, 0.0, 1.0,0.0,     1.0, 1.0, 0.0,1.0};
+    //先缩小0.5，然后平移1.0
+//    float arr[16] = {0.5, 0.0, 0.0,0.0,   0.0, 0.5, 0.0,0.0,    0.0, 0.0, 1.0,0.0,     1.0, 1.0, 0.0,1.0};
+    //先平移1.0，然后缩小到0.5
+//    float arr[16] = {0.5, 0.0, 0.0,0.0,   0.0, 0.5, 0.0,0.0,    0.0, 0.0, 1.0,0.0,    0.5, 0.5, 0.0,1.0};
+
+
+//旋转theta
+    float theta = 45 * M_PI / 180;
+//    float arr[16] = {cos(theta), -sin(theta), 0.0, 0.0
+//                     , sin(theta), cos(theta), 0.0, 0.0
+//                     , 0.0, 0.0, 1.0, 0.0
+//                     , 0.0, 0.0,0.0, 1.0};
+
+    //先缩小到0.5倍，然后逆时针旋转45度，最后x,y方向分别平移0.5个单位
+    float arr[16] = {0.5f*cos(theta), -0.5f*sin(theta), 0.0, 0.0
+                     , 0.5f*sin(theta), 0.5f*cos(theta), 0.0, 0.0
+                     , 0.0, 0.0, 1.0, 0.0
+                     , 0.5, 0.5,0.0, 1.0};
+
+
     GLint uScaleMatrixLocation = glGetUniformLocation(program, "uMatrix");
     mat4 scaleMatrix = glm::mat4(1.0f);
+
+    //使用手动创建的数组
+//    glUniformMatrix4fv(uScaleMatrixLocation, 1, GL_FALSE, arr);
+
+
+    //使用glm
+    //注意：后面调用的先变换，和矩阵相乘一样，最右边的最先执行变换
+    //x,y轴方向分别平移0.5
+    scaleMatrix = glm::translate(scaleMatrix,vec3(0.5));
+    //沿着（0，0，0）点逆时针旋转45度
+    scaleMatrix = glm::rotate(scaleMatrix, glm::radians(45.0f),vec3(0.0f, 0.0f, 1.0f));
+    //缩小到0.5倍
+    scaleMatrix = glm::scale(scaleMatrix,vec3(0.5));
+    //使用glm
     glUniformMatrix4fv(uScaleMatrixLocation, 1, GL_FALSE, glm::value_ptr(scaleMatrix));
 
 
@@ -1891,7 +1930,7 @@ JNIEXPORT void JNICALL
 Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, jobject thiz,
                                                                    jobject surface,
                                                                    jobject asset_manager,
-                                                                   jint filter_type) {
+                                                                   jint filter_type,jboolean isNeedScaleAnim = false) {
     ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -1950,30 +1989,30 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
 
     switch (filter_type) {
         case filter_type_gray:
-            vertexShaderString = vertexShader;
+            vertexShaderString = vertexShaderWithMatrix;
             fragShaderString = fragYUV420PGray;
             break;
 
         case filter_type_oppo:
-            vertexShaderString = vertexShader;
+            vertexShaderString = vertexShaderWithMatrix;
             fragShaderString = fragYUV420POppositeColor;
             break;
         case filter_type_oppo_gray:
-            vertexShaderString = vertexShader;
+            vertexShaderString = vertexShaderWithMatrix;
             fragShaderString = fragYUV420POppoColorAndGray;
             break;
 
         case filter_type_divide_2:
-            vertexShaderString = vertexShader;
+            vertexShaderString = vertexShaderWithMatrix;
             fragShaderString = fragYUV420PDivideTo2;
             break;
         case filter_type_divide_4:
-            vertexShaderString = vertexShader;
+            vertexShaderString = vertexShaderWithMatrix;
             fragShaderString = fragYUV420PDivideTo4;
             break;
 
         default:
-            vertexShaderString = vertexShader;
+            vertexShaderString = vertexShaderWithMatrix;
             fragShaderString = fragYUV420P;
             break;
     }
@@ -2139,15 +2178,19 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
             return;
         }
 
-        float scale = getTransformMatrix(scaleDuration, i);
 
-        //vec3(scale)的3个分量分别乘以scaleMatrix的前三行，第四行齐次坐标不变
-        mat4 resultMatrix = glm::scale(scaleMatrix, vec3(scale));
-        //最后一个参数是围绕哪个向量旋转
+        if (isNeedScaleAnim){
+            float scale = getTransformMatrix(scaleDuration, i);
+
+            //vec3(scale)的3个分量分别乘以scaleMatrix的前三行，第四行齐次坐标不变
+            mat4 resultMatrix = glm::scale(scaleMatrix, vec3(scale));
+            //最后一个参数是围绕哪个向量旋转
 //        resultMatrix = glm::rotate(scaleMatrix, glm::radians(180.0f - scale * 180.0f),
 //                                   glm::vec3(0.0f, 0.0f, 1.0f));
 //        resultMatrix = glm::translate(glm::vec3(0.5f, 0.5f, 0.0f));
-        glUniformMatrix4fv(uScaleMatrixLocation, 1, GL_FALSE, glm::value_ptr(resultMatrix));
+            glUniformMatrix4fv(uScaleMatrixLocation, 1, GL_FALSE, glm::value_ptr(resultMatrix));
+        }
+
 
 //        LOGD("resultMatrix:%d,bufURead:%d,bufVRead:%d", resultMatrix, , bufVRead);
 
@@ -2197,9 +2240,9 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jobject thiz,
-                                                                   jobject surface,
-                                                                   jobject asset_manager,
-                                                                   jint filter_type) {
+                                                                 jobject surface,
+                                                                 jobject asset_manager,
+                                                                 jint filter_type) {
     ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -2258,30 +2301,30 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
 
 //    switch (filter_type) {
 //        case filter_type_gray:
-//            vertexShaderString = vertexShader;
+//            vertexShaderString = vertexShaderWithMatrix;
 //            fragShaderString = fragYUV420PGray;
 //            break;
 //
 //        case filter_type_oppo:
-//            vertexShaderString = vertexShader;
+//            vertexShaderString = vertexShaderWithMatrix;
 //            fragShaderString = fragYUV420POppositeColor;
 //            break;
 //        case filter_type_oppo_gray:
-//            vertexShaderString = vertexShader;
+//            vertexShaderString = vertexShaderWithMatrix;
 //            fragShaderString = fragYUV420POppoColorAndGray;
 //            break;
 //
 //        case filter_type_divide_2:
-//            vertexShaderString = vertexShader;
+//            vertexShaderString = vertexShaderWithMatrix;
 //            fragShaderString = fragYUV420PDivideTo2;
 //            break;
 //        case filter_type_divide_4:
-//            vertexShaderString = vertexShader;
+//            vertexShaderString = vertexShaderWithMatrix;
 //            fragShaderString = fragYUV420PDivideTo4;
 //            break;
 //
 //        default:
-//            vertexShaderString = vertexShader;
+//            vertexShaderString = vertexShaderWithMatrix;
 //            fragShaderString = fragYUV420P;
 //            break;
 //    }

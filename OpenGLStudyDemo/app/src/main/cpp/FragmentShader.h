@@ -78,7 +78,7 @@ static const char *vertexSimpleShapeWithColor =
 
 //顶点着色器，每个顶点执行一次，可以并行执行
 #define GET_STR(x) #x
-static const char *vertexShader =
+static const char *vertexShaderWithMatrix =
         "        #version 300 es\n"
         "        layout (location = 0) \n"
         "        in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"//如果传入的向量是不够4维的，自动将前三个分量设置为0.0，最后一个分量设置为1.0

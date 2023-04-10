@@ -49,13 +49,13 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
         AssetManager assetManager = getContext().getAssets();
 //        loadYuv(getHolder().getSurface(),assetManager);
-//      loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO);
+//      loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.NONE);
  //      loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.GRAY);
 //       loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO_GRAY);
 //        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_2);
-//        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_4);
+        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_4,true);
 
-        loadYuvWithBlurEffect(getHolder().getSurface(),assetManager,0);
+//        loadYuvWithBlurEffect(getHolder().getSurface(),assetManager,0);
 
 
 //     drawTwoTriangle(getHolder().getSurface());
@@ -93,19 +93,19 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     public native void loadYuv(Object surface, AssetManager assetManager);
 
     public native void loadYuvWithFilterEffect(Object surface, AssetManager assetManager
-            ,int filterType);
+            ,int filterType,boolean isNeedScaleAnim);
 
     public native void loadYuvWithBlurEffect(Object surface, AssetManager assetManager
             ,int filterType);
 
 
     interface FilterType{
-        int GRAY = 0;
+        int NONE = 0;
         int OPPO = 1;
         int OPPO_GRAY = 2;
-        int DIVIDE_TO_2 = 3;
-        int DIVIDE_TO_4 = 4;
-
+        int GRAY = 3;
+        int DIVIDE_TO_2 = 4;
+        int DIVIDE_TO_4 = 5;
     }
 
     /**
