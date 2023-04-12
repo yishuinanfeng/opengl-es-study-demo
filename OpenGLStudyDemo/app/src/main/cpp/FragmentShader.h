@@ -288,6 +288,57 @@ static const char *fragYUV420PDivideTo4 =
         "    FragColor = vec4(rgb, 1.0);\n"
         " }";
 
+/**
+ * 灵魂出鞘
+ */
+static const char *fragSoulFled =
+        "#version 300 es\n"
+
+        "precision mediump float;\n"
+        "//纹理坐标\n"
+        "in vec2 vTextCoord;\n"
+        "uniform float uScale;\n"
+        "//输入的yuv三个纹理\n"
+        "uniform sampler2D yTexture;//采样器\n"
+        "uniform sampler2D uTexture;//采样器\n"
+        "uniform sampler2D vTexture;//采样器\n"
+        "out vec4 FragColor;\n"
+        "void main() {\n"
+        "vec3 frontYuv;\n"
+        "vec3 rgb;\n"
+        "vec3 frontRgb;\n"
+        "vec2 frontTextCoord = vTextCoord.xy;"
+        "//采样到的yuv向量数据\n"
+        "vec3 yuv;\n"
+        "//yuv转化得到的rgb向量数据\n"
+        "//分别取yuv各个分量的采样纹理\n"
+        "yuv.x = texture(yTexture, vTextCoord).r;\n"
+        "yuv.y = texture(uTexture, vTextCoord).g - 0.5;\n"
+        "yuv.z = texture(vTexture, vTextCoord).b - 0.5;\n"
+        "rgb = mat3(\n"
+        "            1.0, 1.0, 1.0,\n"
+        "            0.0, -0.183, 1.816,\n"
+        "            1.540, -0.459, 0.0\n"
+        "    ) * yuv;\n"
+        "//将纹理坐标中心转成(0.0, 0.0)再做缩放\n"
+        "vec2 center = vec2(0.5, 0.5);\n"
+        "frontTextCoord = frontTextCoord - center;\n"
+        "frontTextCoord = frontTextCoord / uScale;\n"
+        "frontTextCoord = frontTextCoord + center;\n"
+        "//对缩放后的坐标位置进行采样\n"
+        "frontYuv.r = texture(yTexture, frontTextCoord).r;\n"
+        "frontYuv.g = texture(uTexture, frontTextCoord).r - 0.5;\n"
+        "//NV12会把V采样到a通道\n"
+        "frontYuv.b = texture(vTexture, frontTextCoord).r - 0.5;"
+        "frontRgb = mat3(\n"
+        "       1.0, 1.0, 1.0,\n"
+        "       0.0, -0.183, 1.816,\n"
+        "       1.540, -0.459, 0.0\n"
+        "        ) * frontYuv;\n"
+        "// 原坐标的片段颜色和缩放后坐标片段颜色进行线性混合\n"
+        " FragColor = mix(vec4(rgb, 1.0), vec4(frontRgb, 1.0), 1.0 - fract(uScale));\n"
+        "   // FragColor = vec4(rgb, 1.0);\n"
+        "}";
 
 /**
  * 可缩放的顶点着色器
