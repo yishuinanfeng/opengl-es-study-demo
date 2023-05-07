@@ -54,9 +54,9 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 //       loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO_GRAY);
 //        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_2);
 //        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_4,true);
-        loadYuvWithSoulFled(getHolder().getSurface(),assetManager);
+//        loadYuvWithSoulFled(getHolder().getSurface(),assetManager);
 
-//        loadYuvWithBlurEffect(getHolder().getSurface(),assetManager,0);
+        loadYuvWithBlurEffect(getHolder().getSurface(),assetManager,0);
 
 
 //     drawTwoTriangle(getHolder().getSurface());
@@ -103,11 +103,29 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
 
     interface FilterType{
+        /**
+         * 没有滤镜
+         */
         int NONE = 0;
+        /**
+         * 反色滤镜
+         */
         int OPPO = 1;
+        /**
+         * 反色灰度图滤镜
+         */
         int OPPO_GRAY = 2;
+        /**
+         * 灰度图滤镜
+         */
         int GRAY = 3;
+        /**
+         * 二分镜
+         */
         int DIVIDE_TO_2 = 4;
+        /**
+         * 四分镜
+         */
         int DIVIDE_TO_4 = 5;
     }
 
