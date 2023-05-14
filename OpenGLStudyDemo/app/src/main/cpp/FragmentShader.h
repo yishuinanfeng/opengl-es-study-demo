@@ -38,6 +38,22 @@ static const char *fragSimpleTexture =
         "            FragColor = mix(texture(ourTexture, TexCoord), texture(ourTexture1, TexCoord), 0.5);\n"
         "        }";
 
+//图元被光栅化为多少片段，就被调用多少次
+static const char *frag3DTexture =
+        "        #version 300 es\n"
+        "        precision mediump float;\n"
+        "        in vec2 TexCoord;\n"
+        "        out vec4 FragColor;\n"
+        "        //传入的纹理\n"
+        "        uniform sampler2D ourTexture;\n"
+//        "        uniform sampler2D ourTexture1;\n"
+
+        "        void main() {\n"
+        "            //gl_FragColor是OpenGL内置的\n"
+        "            FragColor = texture(ourTexture, TexCoord);\n"
+//        "            FragColor = mix(texture(ourTexture, TexCoord), texture(ourTexture1, TexCoord), 0.5);\n"
+        "        }";
+
 #define GET_STR(x) #x
 static const char *vertexSimpleShape =
         "        #version 300 es\n"
@@ -96,6 +112,29 @@ static const char *vertexShaderWithMatrix =
         "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
         //    "            gl_Position = aPosition;\n"
         "            gl_Position = uMatrix * aPosition;;\n"
+        "        }";
+
+
+//支持3D效果的顶点着色器，每个顶点执行一次，可以并行执行
+#define GET_STR(x) #x
+static const char *vertexShader3D =
+        "        #version 300 es\n"
+        "        layout (location = 0) in vec4 aPosition;//输入的顶点坐标，会在程序指定将数据输入到该字段\n"//如果传入的向量是不够4维的，自动将前三个分量设置为0.0，最后一个分量设置为1.0
+
+        "        layout (location = 1) in vec2 aTextCoord;//输入的纹理坐标，会在程序指定将数据输入到该字段\n"
+        "\n"
+        "        out vec2 TexCoord;//输出的纹理坐标;\n"
+        "        uniform mat4 model;\n"
+        "        uniform mat4 view;\n"
+        "        uniform mat4 projection;\n"
+        "\n"
+        "        void main() {\n"
+        "            //这里其实是将上下翻转过来（因为安卓图片会自动上下翻转，所以转回来）\n"
+        "             TexCoord = vec2(aTextCoord.x, 1.0 - aTextCoord.y);\n"
+        "            //直接把传入的坐标值作为传入渲染管线。gl_Position是OpenGL内置的\n"
+            "            gl_Position = aPosition;\n"
+        //        "        gl_Position = uMatrix * aPosition;\n"
+        "         gl_Position = projection * view * model * aPosition;\n"
         "        }";
 
 //图元被光栅化为多少片段，就被调用多少次

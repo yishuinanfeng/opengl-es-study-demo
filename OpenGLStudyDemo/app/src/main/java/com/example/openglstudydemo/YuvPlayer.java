@@ -3,7 +3,6 @@ package com.example.openglstudydemo;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
@@ -40,7 +39,8 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-
+        surfaceWidth = w;
+        surfaceHeight = h;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 //        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_4,true);
 //        loadYuvWithSoulFled(getHolder().getSurface(),assetManager);
 
-        loadYuvWithBlurEffect(getHolder().getSurface(),assetManager,0);
+//        loadYuvWithBlurEffect(getHolder().getSurface(),assetManager,0);
 
 
 //     drawTwoTriangle(getHolder().getSurface());
@@ -68,12 +68,14 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
 //        drawableTexture();
 
+        drawaTexture();
+
         Log.d("YuvPlayer", "loadYuv");
     }
 
-    private void drawableTexture() {
-        Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.shiyuanmeili2)).getBitmap();
-        Bitmap bitmap1 = ((BitmapDrawable) getResources().getDrawable(R.drawable.liyingai)).getBitmap();
+    private void drawaTexture() {
+        Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.liyingai)).getBitmap();
+        Bitmap bitmap1 = ((BitmapDrawable) getResources().getDrawable(R.drawable.shiyuanmeili2)).getBitmap();
 
 //        BitmapFactory.Options options1 = new BitmapFactory.Options();
 //        options1.inPreferredConfig = Bitmap.Config.RGB_565;
@@ -88,7 +90,8 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
 
 //        drawTexture(bitmap, w, h, getHolder().getSurface());
-        drawTexture(bitmap,bitmap1,getHolder().getSurface());
+//        drawTexture(bitmap,bitmap1,getHolder().getSurface());
+        draw3DTexture(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
     }
 
     public native void loadYuv(Object surface, AssetManager assetManager);
@@ -192,6 +195,14 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
      */
     public native void drawTexture(Bitmap bitmap, Bitmap bitmap1, Object surface);
 
+    /**
+     * 绘制3D纹理
+     * @param bitmap
+     * @param bitmap1
+     * @param surface
+     */
+    public native void draw3DTexture(Bitmap bitmap, Bitmap bitmap1, Object surface,int screenWidth, int screenHeight);
+
 //    public native void drawTexture(int[] bitmapArr, int w, int h, Object surface);
 
 
@@ -200,9 +211,13 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
     }
 
+    private int surfaceWidth ;
+    private int surfaceHeight ;
+
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-
+        surfaceWidth = width;
+        surfaceHeight = height;
     }
 
     @Override
