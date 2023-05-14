@@ -2075,14 +2075,18 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
     glEnableVertexAttribArray(1);
 
     LOGD("glEnableVertexAttribArray(1)");
-
+    //模型矩阵，将局部坐标转换为世界坐标
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::mat4 view= glm::mat4(1.0f);
-    // 注意，我们将矩阵向我们要进行移动场景的反方向移动。
+    //视图矩阵，确定物体和摄像机的相对位置
+    glm::mat4 view = glm::mat4(1.0f);
+    //透视投影矩阵，实现近大远小的效果
+    glm::mat4 projection = glm::mat4(1.0f);
+    //沿着x轴旋转
+    model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     LOGD("glm::perspective:%d,height:%d", screenWidth, screenHeight);
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)screenWidth / (float)screenHeight, 0.1f,
+    projection = glm::perspective(glm::radians(45.0f), (float)screenWidth / (float)screenHeight, 0.1f,
                                   100.0f);
     LOGD("mat4 init");
     GLint modelLoc = glGetUniformLocation(program, "model");
