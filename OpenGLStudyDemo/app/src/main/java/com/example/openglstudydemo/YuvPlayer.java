@@ -91,7 +91,9 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
 //        drawTexture(bitmap, w, h, getHolder().getSurface());
 //        drawTexture(bitmap,bitmap1,getHolder().getSurface());
-        draw3DTexture(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
+//        draw3DTexture(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
+//        draw3DCubeTexture(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
+        draw3DCubeWithColor(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
     }
 
     public native void loadYuv(Object surface, AssetManager assetManager);
@@ -202,6 +204,26 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
      * @param surface
      */
     public native void draw3DTexture(Bitmap bitmap, Bitmap bitmap1, Object surface,int screenWidth, int screenHeight);
+
+    /**
+     * 绘制立方体贴纹理
+     * @param bitmap
+     * @param bitmap1
+     * @param surface
+     * @param screenWidth
+     * @param screenHeight
+     */
+    public native void draw3DCubeTexture(Bitmap bitmap, Bitmap bitmap1, Object surface, int screenWidth, int screenHeight);
+
+    /**
+     * 绘制渐变色立方体
+     * @param bitmap
+     * @param bitmap1
+     * @param surface
+     * @param screenWidth
+     * @param screenHeight
+     */
+    public native void draw3DCubeWithColor(Bitmap bitmap, Bitmap bitmap1, Object surface,int screenWidth, int screenHeight);
 
 //    public native void drawTexture(int[] bitmapArr, int w, int h, Object surface);
 

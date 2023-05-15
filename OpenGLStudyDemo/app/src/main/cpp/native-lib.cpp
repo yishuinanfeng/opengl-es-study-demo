@@ -3112,3 +3112,509 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
     AAsset_close(dataAsset);
 }
 
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobject thiz, jobject bitmap,
+                                                             jobject bitmap1, jobject surface,
+                                                             jint screen_width, jint screen_height) {
+    ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
+    //获取Display
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        LOGD("egl display failed");
+        return;
+    }
+    //2.初始化egl，后两个参数为主次版本号
+    if (EGL_TRUE != eglInitialize(display, 0, 0)) {
+        LOGD("eglInitialize failed");
+        return;
+    }
+
+    //3.1 surface配置，可以理解为窗口
+    EGLConfig eglConfig;
+    EGLint configNum;
+    EGLint configSpec[] = {
+            EGL_RED_SIZE, 8,
+            EGL_GREEN_SIZE, 8,
+            EGL_BLUE_SIZE, 8,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_RENDERABLE_TYPE,
+            EGL_OPENGL_ES3_BIT,
+            EGL_NONE
+    };
+
+    if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
+        LOGD("eglChooseConfig failed");
+        return;
+    }
+
+    //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
+    EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
+    if (winSurface == EGL_NO_SURFACE) {
+        LOGD("eglCreateWindowSurface failed");
+        return;
+    }
+
+    //4 创建关联上下文
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+    //EGL_NO_CONTEXT表示不需要多个设备共享上下文
+    EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
+    if (context == EGL_NO_CONTEXT) {
+        LOGD("eglCreateContext failed");
+        return;
+    }
+    //将egl和opengl关联
+    //两个surface一个读一个写。第二个一般用来离线渲染？
+    if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
+        LOGD("eglMakeCurrent failed");
+        return;
+    }
+
+    GLint vsh = initShader(vertexShader3D, GL_VERTEX_SHADER);
+    GLint fsh = initShader(frag3DTexture, GL_FRAGMENT_SHADER);
+
+    //创建渲染程序
+    GLint program = glCreateProgram();
+    if (program == 0) {
+        LOGD("glCreateProgram failed");
+        return;
+    }
+
+    //向渲染程序中加入着色器
+    glAttachShader(program, vsh);
+    glAttachShader(program, fsh);
+
+    //链接程序
+    glLinkProgram(program);
+    GLint status = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == 0) {
+        LOGD("glLinkProgram failed");
+        return;
+    }
+    LOGD("glLinkProgram success");
+    //激活渲染程序
+    glUseProgram(program);
+
+    float vertices[] = {
+            // 顶点坐标           纹理坐标
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, //背后左下角点 0
+            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,//背后右下角点 1
+
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,//背后右上角点 2
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,//背后左上角点 3
+
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,//前面左下角点 4
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,//前面右下角点 5
+
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,//前面右上角点 6
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,//前面左上角点 7
+
+    };
+    unsigned int indices[] = {
+            //背面
+            0, 1, 3, // first triangle
+            1, 2, 3, // second triangle
+            //上面
+            2, 3, 7, // first triangle
+            7, 6, 2,  // second triangle
+            //左面
+            3, 0, 4, // first triangle
+            4, 7, 3, // second triangle
+            //右面
+            2, 1, 5, // first triangle
+            5, 6, 2, // second triangle
+            //下面
+            1, 0, 4, // first triangle
+            5, 4, 1, // second triangle
+            //前面
+            6, 5, 4, // first triangle
+            4, 6, 7, // second triangle
+    };
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+                          (void *) (3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    LOGD("glEnableVertexAttribArray(1)");
+    //模型矩阵，将局部坐标转换为世界坐标
+    glm::mat4 model = glm::mat4(1.0f);
+    //视图矩阵，确定物体和摄像机的相对位置
+    glm::mat4 view = glm::mat4(1.0f);
+    //透视投影矩阵，实现近大远小的效果
+    glm::mat4 projection = glm::mat4(1.0f);
+    //沿着向量(0.5f, 1.0f, 0.0f)旋转
+    model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
+    projection = glm::perspective(glm::radians(45.0f), (float)screen_width / (float)screen_height, 0.1f,
+                                  100.0f);
+    LOGD("mat4 init");
+    GLint modelLoc = glGetUniformLocation(program, "model");
+    GLint viewLoc  = glGetUniformLocation(program, "view");
+    GLint projectionLoc  = glGetUniformLocation(program, "projection");
+    LOGD("glGetUniformLocation");
+    // pass them to the shaders (3 different ways)
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    LOGD("glUniformMatrix4fv");
+    AndroidBitmapInfo bmpInfo;
+    void *bmpPixels;
+
+    if (AndroidBitmap_getInfo(env, bitmap, &bmpInfo) < 0) {
+        LOGD("AndroidBitmap_getInfo() failed ! ");
+        return;
+    }
+
+    AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
+
+    LOGD("bitmap width:%d,height:%d", bmpInfo.width, bmpInfo.height);
+
+    AndroidBitmapInfo bmpInfo1;
+    void *bmpPixels1;
+
+    if (AndroidBitmap_getInfo(env, bitmap1, &bmpInfo1) < 0) {
+        LOGD("AndroidBitmap_getInfo() failed ! ");
+        return;
+    }
+
+    AndroidBitmap_lockPixels(env, bitmap1, &bmpPixels1);
+
+    LOGD("bitmap width:%d,height:%d", bmpInfo1.width, bmpInfo1.height);
+
+    if (bmpPixels == nullptr || bmpPixels1 == nullptr) {
+        return;
+    }
+
+
+    // load and create a texture
+    // -------------------------
+//    unsigned int texture1, texture2;
+    unsigned int texture1;
+    //-------------------- texture1的配置start ------------------------------
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    // set the texture wrapping parameters（配置纹理环绕）
+    //横坐标环绕配置
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);    // set texture wrapping to GL_REPEAT (default wrapping method)
+    //纵坐标环绕配置
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters（配置纹理过滤）
+    //纹理分辨率大于图元分辨率，即纹理需要被缩小的过滤配置
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //纹理分辨率小于图元分辨率，即纹理需要被放大的过滤配置
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, bmpPixels);
+    AndroidBitmap_unlockPixels(env, bitmap);
+    //-------------------- texture1的配置end ------------------------------
+
+    //对着色器中的纹理单元变量进行赋值
+    glUniform1i(glGetUniformLocation(program, "ourTexture"), 0);
+//    glUniform1i(glGetUniformLocation(program, "ourTexture1"), 1);
+
+    //将纹理单元和纹理对象进行绑定
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+//    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+    //    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+    //窗口显示，交换双缓冲区
+    eglSwapBuffers(display, winSurface);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    //释放着色器程序对象
+    glDeleteProgram(program);
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobject thiz,
+                                                               jobject bitmap, jobject bitmap1,
+                                                               jobject surface, jint screen_width,
+                                                               jint screen_height) {
+    ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
+    //获取Display
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        LOGD("egl display failed");
+        return;
+    }
+    //2.初始化egl，后两个参数为主次版本号
+    if (EGL_TRUE != eglInitialize(display, 0, 0)) {
+        LOGD("eglInitialize failed");
+        return;
+    }
+
+    //3.1 surface配置，可以理解为窗口
+    EGLConfig eglConfig;
+    EGLint configNum;
+    EGLint configSpec[] = {
+            EGL_RED_SIZE, 8,
+            EGL_GREEN_SIZE, 8,
+            EGL_BLUE_SIZE, 8,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_RENDERABLE_TYPE,
+            EGL_OPENGL_ES3_BIT,
+            EGL_NONE
+    };
+
+    if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
+        LOGD("eglChooseConfig failed");
+        return;
+    }
+
+    //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
+    EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
+    if (winSurface == EGL_NO_SURFACE) {
+        LOGD("eglCreateWindowSurface failed");
+        return;
+    }
+
+    //4 创建关联上下文
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+    //EGL_NO_CONTEXT表示不需要多个设备共享上下文
+    EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
+    if (context == EGL_NO_CONTEXT) {
+        LOGD("eglCreateContext failed");
+        return;
+    }
+    //将egl和opengl关联
+    //两个surface一个读一个写。第二个一般用来离线渲染？
+    if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
+        LOGD("eglMakeCurrent failed");
+        return;
+    }
+
+    GLint vsh = initShader(vertexShader3DGradientColor, GL_VERTEX_SHADER);
+    GLint fsh = initShader(frag3DGradientColor, GL_FRAGMENT_SHADER);
+
+    //创建渲染程序
+    GLint program = glCreateProgram();
+    if (program == 0) {
+        LOGD("glCreateProgram failed");
+        return;
+    }
+
+    //向渲染程序中加入着色器
+    glAttachShader(program, vsh);
+    glAttachShader(program, fsh);
+
+    //链接程序
+    glLinkProgram(program);
+    GLint status = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == 0) {
+        LOGD("glLinkProgram failed");
+        return;
+    }
+    LOGD("glLinkProgram success");
+    //激活渲染程序
+    glUseProgram(program);
+
+    float vertices[] = {
+            // 顶点坐标                 颜色
+            -0.5f, -0.5f, -0.5f,   1.0f ,0.0f,0.0f,//背后左下角点 0
+            0.5f, -0.5f, -0.5f,   1.0f ,1.0f,0.0f,//背后右下角点 1
+
+            0.5f,  0.5f, -0.5f,  1.0f ,1.0f,1.0f,//背后右上角点 2
+            -0.5f,  0.5f, -0.5f,  0.0f ,1.0f,1.0f,//背后左上角点 3
+
+            -0.5f, -0.5f,  0.5f,  1.0f ,0.0f,1.0f,//前面左下角点 4
+            0.5f, -0.5f,  0.5f,   0.0f ,0.0f,1.0f,//前面右下角点 5
+
+            0.5f,  0.5f,  0.5f,    1.0f ,0.0f,0.0f,//前面右上角点 6
+            -0.5f,  0.5f,  0.5f,   0.0f ,1.0f,1.0f,//前面左上角点 7
+
+    };
+    unsigned int indices[] = {
+            //背面
+            0, 1, 3, // first triangle
+            1, 2, 3, // second triangle
+            //上面
+            2, 3, 7, // first triangle
+            7, 6, 2,  // second triangle
+            //左面
+            3, 0, 4, // first triangle
+            4, 7, 3, // second triangle
+            //右面
+            2, 1, 5, // first triangle
+            5, 6, 2, // second triangle
+            //下面
+            1, 0, 4, // first triangle
+            5, 4, 1, // second triangle
+            //前面
+            6, 5, 4, // first triangle
+            4, 6, 7, // second triangle
+    };
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                          (void *) (3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+
+    LOGD("glEnableVertexAttribArray(1)");
+    //模型矩阵，将局部坐标转换为世界坐标
+    glm::mat4 model = glm::mat4(1.0f);
+    //视图矩阵，确定物体和摄像机的相对位置
+    glm::mat4 view = glm::mat4(1.0f);
+    //透视投影矩阵，实现近大远小的效果
+    glm::mat4 projection = glm::mat4(1.0f);
+    //沿着向量(0.5f, 1.0f, 0.0f)旋转
+    model = glm::rotate(model, glm::radians(-70.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
+    projection = glm::perspective(glm::radians(45.0f), (float)screen_width / (float)screen_height, 0.1f,
+                                  100.0f);
+    LOGD("mat4 init");
+    GLint modelLoc = glGetUniformLocation(program, "model");
+    GLint viewLoc  = glGetUniformLocation(program, "view");
+    GLint projectionLoc  = glGetUniformLocation(program, "projection");
+    LOGD("glGetUniformLocation");
+    // pass them to the shaders (3 different ways)
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    LOGD("glUniformMatrix4fv");
+    AndroidBitmapInfo bmpInfo;
+    void *bmpPixels;
+
+    if (AndroidBitmap_getInfo(env, bitmap, &bmpInfo) < 0) {
+        LOGD("AndroidBitmap_getInfo() failed ! ");
+        return;
+    }
+
+    AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
+
+    LOGD("bitmap width:%d,height:%d", bmpInfo.width, bmpInfo.height);
+
+    AndroidBitmapInfo bmpInfo1;
+    void *bmpPixels1;
+
+    if (AndroidBitmap_getInfo(env, bitmap1, &bmpInfo1) < 0) {
+        LOGD("AndroidBitmap_getInfo() failed ! ");
+        return;
+    }
+
+    AndroidBitmap_lockPixels(env, bitmap1, &bmpPixels1);
+
+    LOGD("bitmap width:%d,height:%d", bmpInfo1.width, bmpInfo1.height);
+
+    if (bmpPixels == nullptr || bmpPixels1 == nullptr) {
+        return;
+    }
+
+
+    // load and create a texture
+    // -------------------------
+//    unsigned int texture1, texture2;
+    unsigned int texture1;
+    //-------------------- texture1的配置start ------------------------------
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    // set the texture wrapping parameters（配置纹理环绕）
+    //横坐标环绕配置
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);    // set texture wrapping to GL_REPEAT (default wrapping method)
+    //纵坐标环绕配置
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters（配置纹理过滤）
+    //纹理分辨率大于图元分辨率，即纹理需要被缩小的过滤配置
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //纹理分辨率小于图元分辨率，即纹理需要被放大的过滤配置
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, bmpPixels);
+    AndroidBitmap_unlockPixels(env, bitmap);
+    //-------------------- texture1的配置end ------------------------------
+
+    //对着色器中的纹理单元变量进行赋值
+    glUniform1i(glGetUniformLocation(program, "ourTexture"), 0);
+//    glUniform1i(glGetUniformLocation(program, "ourTexture1"), 1);
+
+    //将纹理单元和纹理对象进行绑定
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+//    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+    //    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+    //窗口显示，交换双缓冲区
+    eglSwapBuffers(display, winSurface);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    //释放着色器程序对象
+}
