@@ -3455,16 +3455,16 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
     float vertices[] = {
             // 顶点坐标                 颜色
             -0.5f, -0.5f, -0.5f,   1.0f ,0.0f,0.0f,//背后左下角点 0
-            0.5f, -0.5f, -0.5f,   1.0f ,1.0f,0.0f,//背后右下角点 1
+            0.5f, -0.5f, -0.5f,   0.0f ,1.0f,0.0f,//背后右下角点 1
 
-            0.5f,  0.5f, -0.5f,  1.0f ,1.0f,1.0f,//背后右上角点 2
-            -0.5f,  0.5f, -0.5f,  0.0f ,1.0f,1.0f,//背后左上角点 3
+            0.5f,  0.5f, -0.5f,   0.0f ,0.0f,1.0f,//背后右上角点 2
+            -0.5f,  0.5f, -0.5f,  0.0f ,0.0f,0.0f,//背后左上角点 3
 
-            -0.5f, -0.5f,  0.5f,  1.0f ,0.0f,1.0f,//前面左下角点 4
-            0.5f, -0.5f,  0.5f,   0.0f ,0.0f,1.0f,//前面右下角点 5
+            -0.5f, -0.5f,  0.5f,  0.0f ,0.0f,0.0f,//前面左下角点 4
+            0.5f, -0.5f,  0.5f,   0.0f ,1.0f,1.0f ,//前面右下角点 5
 
-            0.5f,  0.5f,  0.5f,    1.0f ,0.0f,0.0f,//前面右上角点 6
-            -0.5f,  0.5f,  0.5f,   0.0f ,1.0f,1.0f,//前面左上角点 7
+            0.5f,  0.5f,  0.5f,   0.0f ,1.0f,0.0f,//前面右上角点 6
+            -0.5f,  0.5f,  0.5f,  1.0f ,0.0f,0.0f ,//前面左上角点 7
 
     };
     unsigned int indices[] = {
@@ -3510,104 +3510,46 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
                           (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    float f = 0.0f;
+    while(f >= 0){
+        //模型矩阵，将局部坐标转换为世界坐标
+        glm::mat4 model = glm::mat4(1.0f);
+        //视图矩阵，确定物体和摄像机的相对位置
+        glm::mat4 view = glm::mat4(1.0f);
+        //透视投影矩阵，实现近大远小的效果
+        glm::mat4 projection = glm::mat4(1.0f);
+        //沿着向量(0.5f, 1.0f, 0.0f)旋转
+        LOGD("f:%f",f);
+        model = glm::rotate(model, glm::radians(f), glm::vec3(0.5f, 1.0f, 0.0f));
+        // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
+        projection = glm::perspective(glm::radians(45.0f), (float)screen_width / (float)screen_height, 0.1f,
+                                      100.0f);
 
-    LOGD("glEnableVertexAttribArray(1)");
-    //模型矩阵，将局部坐标转换为世界坐标
-    glm::mat4 model = glm::mat4(1.0f);
-    //视图矩阵，确定物体和摄像机的相对位置
-    glm::mat4 view = glm::mat4(1.0f);
-    //透视投影矩阵，实现近大远小的效果
-    glm::mat4 projection = glm::mat4(1.0f);
-    //沿着向量(0.5f, 1.0f, 0.0f)旋转
-    model = glm::rotate(model, glm::radians(-70.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-    // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
-    projection = glm::perspective(glm::radians(45.0f), (float)screen_width / (float)screen_height, 0.1f,
-                                  100.0f);
-    LOGD("mat4 init");
-    GLint modelLoc = glGetUniformLocation(program, "model");
-    GLint viewLoc  = glGetUniformLocation(program, "view");
-    GLint projectionLoc  = glGetUniformLocation(program, "projection");
-    LOGD("glGetUniformLocation");
-    // pass them to the shaders (3 different ways)
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    LOGD("glUniformMatrix4fv");
-    AndroidBitmapInfo bmpInfo;
-    void *bmpPixels;
+        GLint modelLoc = glGetUniformLocation(program, "model");
+        GLint viewLoc  = glGetUniformLocation(program, "view");
+        GLint projectionLoc  = glGetUniformLocation(program, "projection");
+        LOGD("glGetUniformLocation");
+        // pass them to the shaders (3 different ways)
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        LOGD("glUniformMatrix4fv");
 
-    if (AndroidBitmap_getInfo(env, bitmap, &bmpInfo) < 0) {
-        LOGD("AndroidBitmap_getInfo() failed ! ");
-        return;
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glEnable(GL_DEPTH_TEST);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+        //窗口显示，交换双缓冲区
+        eglSwapBuffers(display, winSurface);
+
+        f++;
+        sleep(static_cast<unsigned int>(0.4));
     }
 
-    AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
-
-    LOGD("bitmap width:%d,height:%d", bmpInfo.width, bmpInfo.height);
-
-    AndroidBitmapInfo bmpInfo1;
-    void *bmpPixels1;
-
-    if (AndroidBitmap_getInfo(env, bitmap1, &bmpInfo1) < 0) {
-        LOGD("AndroidBitmap_getInfo() failed ! ");
-        return;
-    }
-
-    AndroidBitmap_lockPixels(env, bitmap1, &bmpPixels1);
-
-    LOGD("bitmap width:%d,height:%d", bmpInfo1.width, bmpInfo1.height);
-
-    if (bmpPixels == nullptr || bmpPixels1 == nullptr) {
-        return;
-    }
-
-
-    // load and create a texture
-    // -------------------------
-//    unsigned int texture1, texture2;
-    unsigned int texture1;
-    //-------------------- texture1的配置start ------------------------------
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    // set the texture wrapping parameters（配置纹理环绕）
-    //横坐标环绕配置
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);    // set texture wrapping to GL_REPEAT (default wrapping method)
-    //纵坐标环绕配置
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters（配置纹理过滤）
-    //纹理分辨率大于图元分辨率，即纹理需要被缩小的过滤配置
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    //纹理分辨率小于图元分辨率，即纹理需要被放大的过滤配置
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, bmpPixels);
-    AndroidBitmap_unlockPixels(env, bitmap);
-    //-------------------- texture1的配置end ------------------------------
-
-    //对着色器中的纹理单元变量进行赋值
-    glUniform1i(glGetUniformLocation(program, "ourTexture"), 0);
-//    glUniform1i(glGetUniformLocation(program, "ourTexture1"), 1);
-
-    //将纹理单元和纹理对象进行绑定
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
-//    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-    //    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-
-    //窗口显示，交换双缓冲区
-    eglSwapBuffers(display, winSurface);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
