@@ -3201,17 +3201,17 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
 
     float vertices[] = {
             // 顶点坐标           纹理坐标
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, //背后左下角点 0
-            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,//背后右下角点 1
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, //背左下角点 0
+            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,//背右下角点 1
 
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,//背后右上角点 2
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,//背后左上角点 3
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,//背右上角点 2
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,//背左上角点 3
 
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,//前面左下角点 4
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,//前面右下角点 5
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,//前左下角点 4
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,//前右下角点 5
 
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,//前面右上角点 6
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,//前面左上角点 7
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,//前右上角点 6
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,//前左上角点 7
 
     };
     unsigned int indices[] = {
@@ -3225,14 +3225,14 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
             3, 0, 4, // first triangle
             4, 7, 3, // second triangle
             //右面
-            2, 1, 5, // first triangle
-            5, 6, 2, // second triangle
+            5, 1, 2, // first triangle
+            2, 6, 5, // second triangle
             //下面
             1, 0, 4, // first triangle
-            5, 4, 1, // second triangle
+            4, 5, 1, // second triangle
             //前面
-            6, 5, 4, // first triangle
-            4, 6, 7, // second triangle
+            4, 5, 6, // first triangle
+            6, 7, 4, // second triangle
     };
     unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -3426,6 +3426,9 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
         return;
     }
 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
     GLint vsh = initShader(vertexShader3DGradientColor, GL_VERTEX_SHADER);
     GLint fsh = initShader(frag3DGradientColor, GL_FRAGMENT_SHADER);
 
@@ -3469,8 +3472,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
     };
     unsigned int indices[] = {
             //背面
-            0, 1, 3, // first triangle
-            1, 2, 3, // second triangle
+            0, 3, 1, // first triangle
+            3, 2, 1, // second triangle
             //上面
             2, 3, 7, // first triangle
             7, 6, 2,  // second triangle
@@ -3478,14 +3481,14 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
             3, 0, 4, // first triangle
             4, 7, 3, // second triangle
             //右面
-            2, 1, 5, // first triangle
-            5, 6, 2, // second triangle
+            5, 1, 2, // first triangle
+            2, 6, 5, // second triangle
             //下面
-            1, 0, 4, // first triangle
-            5, 4, 1, // second triangle
+            4, 0, 1, // first triangle
+            1, 5, 4,// second triangle
             //前面
-            6, 5, 4, // first triangle
-            4, 6, 7, // second triangle
+            4, 5, 6, // first triangle
+            6, 7, 4, // second triangle
     };
     unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -3512,6 +3515,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
 
     float f = 0.0f;
     while(f >= 0){
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //模型矩阵，将局部坐标转换为世界坐标
         glm::mat4 model = glm::mat4(1.0f);
         //视图矩阵，确定物体和摄像机的相对位置
@@ -3537,10 +3542,6 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
         LOGD("glUniformMatrix4fv");
 
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glEnable(GL_DEPTH_TEST);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         //窗口显示，交换双缓冲区
