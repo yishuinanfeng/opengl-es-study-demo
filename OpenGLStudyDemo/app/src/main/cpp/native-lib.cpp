@@ -2042,10 +2042,10 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
 
     float vertices[] = {
             // positions         // texture coords
-            0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
-            0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
-            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
-            -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left
+            0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // top right
+            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
+            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
+            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f  // top left
     };
     unsigned int indices[] = {
             0, 1, 3, // first triangle
@@ -2086,12 +2086,13 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
     // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     LOGD("glm::perspective:%d,height:%d", screenWidth, screenHeight);
-    projection = glm::perspective(glm::radians(45.0f), (float)screenWidth / (float)screenHeight, 0.1f,
+    projection = glm::perspective(glm::radians(45.0f), (float) screenWidth / (float) screenHeight,
+                                  0.1f,
                                   100.0f);
     LOGD("mat4 init");
     GLint modelLoc = glGetUniformLocation(program, "model");
-    GLint viewLoc  = glGetUniformLocation(program, "view");
-    GLint projectionLoc  = glGetUniformLocation(program, "projection");
+    GLint viewLoc = glGetUniformLocation(program, "view");
+    GLint projectionLoc = glGetUniformLocation(program, "projection");
     LOGD("glGetUniformLocation");
     // pass them to the shaders (3 different ways)
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -3115,9 +3116,11 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobject thiz, jobject bitmap,
+Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobject thiz,
+                                                             jobject bitmap,
                                                              jobject bitmap1, jobject surface,
-                                                             jint screen_width, jint screen_height) {
+                                                             jint screen_width,
+                                                             jint screen_height) {
     ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -3173,6 +3176,9 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
         return;
     }
 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
     GLint vsh = initShader(vertexShader3D, GL_VERTEX_SHADER);
     GLint fsh = initShader(frag3DTexture, GL_FRAGMENT_SHADER);
 
@@ -3201,51 +3207,87 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
 
     float vertices[] = {
             // 顶点坐标           纹理坐标
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, //背左下角点 0
-            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,//背右下角点 1
-
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,//背右上角点 2
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,//背左上角点 3
-
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,//前左下角点 4
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,//前右下角点 5
-
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,//前右上角点 6
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,//前左上角点 7
-
-    };
-    unsigned int indices[] = {
             //背面
-            0, 1, 3, // first triangle
-            1, 2, 3, // second triangle
-            //上面
-            2, 3, 7, // first triangle
-            7, 6, 2,  // second triangle
-            //左面
-            3, 0, 4, // first triangle
-            4, 7, 3, // second triangle
-            //右面
-            5, 1, 2, // first triangle
-            2, 6, 5, // second triangle
-            //下面
-            1, 0, 4, // first triangle
-            4, 5, 1, // second triangle
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  //2
+            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,  //1
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, //0
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  //0
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  //3
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  //2
+
             //前面
-            4, 5, 6, // first triangle
-            6, 7, 4, // second triangle
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,//4
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,//5
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,//6
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,//6
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,//7
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,//4
+
+            //左面
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,//7
+            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,//3
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,//0
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,//0
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,//4
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,//7
+
+            //右面
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,//1
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,//2
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,//6
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,//6
+            0.5f, -0.5f,  0.5f,  0.0f, 0.0f,//5
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,//1
+
+            //底面
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,//0
+            0.5f, -0.5f, -0.5f,  1.0f, 1.0f,//1
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,//5
+            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,//5
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,//4
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,//0
+
+            //上面
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,//6
+            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,//2
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,//3
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,//3
+            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,//7
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,//6
+
     };
-    unsigned int VBO, VAO, EBO;
+//    unsigned int indices[] = {
+//            //背面
+//            0, 1, 3, // first triangle
+//            1, 2, 3, // second triangle
+//            //上面
+//            2, 3, 7, // first triangle
+//            7, 6, 2,  // second triangle
+//            //左面
+//            3, 0, 4, // first triangle
+//            4, 7, 3, // second triangle
+//            //右面
+//            5, 1, 2, // first triangle
+//            2, 6, 5, // second triangle
+//            //下面
+//            1, 0, 4, // first triangle
+//            4, 5, 1, // second triangle
+//            //前面
+//            4, 5, 6, // first triangle
+//            6, 7, 4, // second triangle
+//    };
+    unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+//    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
 
@@ -3258,29 +3300,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     glEnableVertexAttribArray(1);
 
     LOGD("glEnableVertexAttribArray(1)");
-    //模型矩阵，将局部坐标转换为世界坐标
-    glm::mat4 model = glm::mat4(1.0f);
-    //视图矩阵，确定物体和摄像机的相对位置
-    glm::mat4 view = glm::mat4(1.0f);
-    //透视投影矩阵，实现近大远小的效果
-    glm::mat4 projection = glm::mat4(1.0f);
-    //沿着向量(0.5f, 1.0f, 0.0f)旋转
-    model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-    // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
-    projection = glm::perspective(glm::radians(45.0f), (float)screen_width / (float)screen_height, 0.1f,
-                                  100.0f);
-    LOGD("mat4 init");
-    GLint modelLoc = glGetUniformLocation(program, "model");
-    GLint viewLoc  = glGetUniformLocation(program, "view");
-    GLint projectionLoc  = glGetUniformLocation(program, "projection");
-    LOGD("glGetUniformLocation");
-    // pass them to the shaders (3 different ways)
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    LOGD("glUniformMatrix4fv");
+
+
     AndroidBitmapInfo bmpInfo;
     void *bmpPixels;
 
@@ -3319,7 +3340,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     glBindTexture(GL_TEXTURE_2D, texture1);
     // set the texture wrapping parameters（配置纹理环绕）
     //横坐标环绕配置
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);    // set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                    GL_REPEAT);    // set texture wrapping to GL_REPEAT (default wrapping method)
     //纵坐标环绕配置
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // set texture filtering parameters（配置纹理过滤）
@@ -3339,21 +3361,54 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
 //    glUniform1i(glGetUniformLocation(program, "ourTexture1"), 1);
 
     //将纹理单元和纹理对象进行绑定
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture1);
+//    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, texture1);
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    float f = 0.0f;
+    while (f >= 0) {
+        //模型矩阵，将局部坐标转换为世界坐标
+        glm::mat4 model = glm::mat4(1.0f);
+        //视图矩阵，确定物体和摄像机的相对位置
+        glm::mat4 view = glm::mat4(1.0f);
+        //透视投影矩阵，实现近大远小的效果
+        glm::mat4 projection = glm::mat4(1.0f);
+        //沿着向量(0.5f, 1.0f, 0.0f)旋转
+        model = glm::rotate(model, glm::radians(f), glm::vec3(0.5f, 1.0f, 0.0f));
+        // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+        LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
+        projection = glm::perspective(glm::radians(45.0f),
+                                      (float) screen_width / (float) screen_height, 0.1f,
+                                      100.0f);
+        LOGD("mat4 init");
+        GLint modelLoc = glGetUniformLocation(program, "model");
+        GLint viewLoc = glGetUniformLocation(program, "view");
+        GLint projectionLoc = glGetUniformLocation(program, "projection");
+        LOGD("glGetUniformLocation");
+        // pass them to the shaders (3 different ways)
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        LOGD("glUniformMatrix4fv");
 
-    glEnable(GL_DEPTH_TEST);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 //    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+//    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-    //    glDrawArrays(GL_TRIANGLES, 0, 3);
+//    glDrawArrays(GL_TRIANGLES, 0, 3);
 
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    //窗口显示，交换双缓冲区
-    eglSwapBuffers(display, winSurface);
+        //窗口显示，交换双缓冲区
+        eglSwapBuffers(display, winSurface);
+
+        f++;
+        sleep(static_cast<unsigned int>(0.4f));
+    }
+
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -3361,7 +3416,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+//    glDeleteBuffers(1, &EBO);
     //释放着色器程序对象
     glDeleteProgram(program);
 }
@@ -3457,17 +3512,17 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
 
     float vertices[] = {
             // 顶点坐标                 颜色
-            -0.5f, -0.5f, -0.5f,   1.0f ,0.0f,0.0f,//背后左下角点 0
-            0.5f, -0.5f, -0.5f,   0.0f ,1.0f,0.0f,//背后右下角点 1
+            -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,//背后左下角点 0
+            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,//背后右下角点 1
 
-            0.5f,  0.5f, -0.5f,   0.0f ,0.0f,1.0f,//背后右上角点 2
-            -0.5f,  0.5f, -0.5f,  0.0f ,0.0f,0.0f,//背后左上角点 3
+            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f,//背后右上角点 2
+            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f,//背后左上角点 3
 
-            -0.5f, -0.5f,  0.5f,  0.0f ,0.0f,0.0f,//前面左下角点 4
-            0.5f, -0.5f,  0.5f,   0.0f ,1.0f,1.0f ,//前面右下角点 5
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f,//前面左下角点 4
+            0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 1.0f,//前面右下角点 5
 
-            0.5f,  0.5f,  0.5f,   0.0f ,1.0f,0.0f,//前面右上角点 6
-            -0.5f,  0.5f,  0.5f,  1.0f ,0.0f,0.0f ,//前面左上角点 7
+            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,//前面右上角点 6
+            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,//前面左上角点 7
 
     };
     unsigned int indices[] = {
@@ -3514,7 +3569,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
     glEnableVertexAttribArray(1);
 
     float f = 0.0f;
-    while(f >= 0){
+    while (f >= 0) {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //模型矩阵，将局部坐标转换为世界坐标
@@ -3524,17 +3579,18 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
         //透视投影矩阵，实现近大远小的效果
         glm::mat4 projection = glm::mat4(1.0f);
         //沿着向量(0.5f, 1.0f, 0.0f)旋转
-        LOGD("f:%f",f);
+        LOGD("f:%f", f);
         model = glm::rotate(model, glm::radians(f), glm::vec3(0.5f, 1.0f, 0.0f));
         // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
         LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
-        projection = glm::perspective(glm::radians(45.0f), (float)screen_width / (float)screen_height, 0.1f,
+        projection = glm::perspective(glm::radians(45.0f),
+                                      (float) screen_width / (float) screen_height, 0.1f,
                                       100.0f);
 
         GLint modelLoc = glGetUniformLocation(program, "model");
-        GLint viewLoc  = glGetUniformLocation(program, "view");
-        GLint projectionLoc  = glGetUniformLocation(program, "projection");
+        GLint viewLoc = glGetUniformLocation(program, "view");
+        GLint projectionLoc = glGetUniformLocation(program, "projection");
         LOGD("glGetUniformLocation");
         // pass them to the shaders (3 different ways)
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
