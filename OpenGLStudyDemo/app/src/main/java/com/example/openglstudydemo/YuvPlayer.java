@@ -76,6 +76,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     private void drawaTexture() {
         Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.liyingai)).getBitmap();
         Bitmap bitmap1 = ((BitmapDrawable) getResources().getDrawable(R.drawable.shiyuanmeili2)).getBitmap();
+        Bitmap bitmap2 = ((BitmapDrawable) getResources().getDrawable(R.drawable.labixiaoxin)).getBitmap();
 
 //        BitmapFactory.Options options1 = new BitmapFactory.Options();
 //        options1.inPreferredConfig = Bitmap.Config.RGB_565;
@@ -92,7 +93,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 //        drawTexture(bitmap, w, h, getHolder().getSurface());
 //        drawTexture(bitmap,bitmap1,getHolder().getSurface());
 //        draw3DTexture(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
-        draw3DCubeTexture(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
+        draw3DCubeTexture(bitmap2,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
 //        draw3DCubeWithColor(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
     }
 

@@ -3352,7 +3352,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     // load image, create texture and generate mipmaps
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, bmpPixels);
+                 GL_UNSIGNED_BYTE, NULL);
     AndroidBitmap_unlockPixels(env, bitmap);
     //-------------------- texture1的配置end ------------------------------
 
@@ -3375,7 +3375,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
         //沿着向量(0.5f, 1.0f, 0.0f)旋转
         model = glm::rotate(model, glm::radians(f), glm::vec3(0.5f, 1.0f, 0.0f));
         // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -4.0f));
         LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
         projection = glm::perspective(glm::radians(45.0f),
                                       (float) screen_width / (float) screen_height, 0.1f,
@@ -3400,7 +3400,17 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
 //    glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (int i = 0; i < 36; i = i + 6) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture1);
+//            glTexSubImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height, 0, GL_RGBA,
+//                         GL_UNSIGNED_BYTE, bmpPixels);
+            //替换纹理，比重新使用glTexImage2D性能高
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bmpInfo.width, bmpInfo.height, GL_RGBA,
+                            GL_UNSIGNED_BYTE,
+                            bmpPixels);
+            glDrawArrays(GL_TRIANGLES, i, 6);
+        }
 
         //窗口显示，交换双缓冲区
         eglSwapBuffers(display, winSurface);
