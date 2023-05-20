@@ -3527,7 +3527,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
         LOGD("f:%f",f);
         model = glm::rotate(model, glm::radians(f), glm::vec3(0.5f, 1.0f, 0.0f));
         // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
         LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
         projection = glm::perspective(glm::radians(45.0f), (float)screen_width / (float)screen_height, 0.1f,
                                       100.0f);
