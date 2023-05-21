@@ -120,8 +120,9 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
             Log.d("YuvPlayer","Bitmap:" + bitmaps[i]);
         }
 
-        draw3DCubeTexture(bitmaps,getHolder().getSurface(),surfaceWidth,surfaceHeight);
-//        draw3DCubeWithColor(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
+//        draw3DCubeTexture(bitmaps,getHolder().getSurface(),surfaceWidth,surfaceHeight);
+//        draw3DCubeWithColor(getHolder().getSurface(),surfaceWidth,surfaceHeight);
+        draw3DColorCubeCamera(getHolder().getSurface(),surfaceWidth,surfaceHeight);
     }
 
 
@@ -251,7 +252,16 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
      * @param screenWidth
      * @param screenHeight
      */
-    public native void draw3DCubeWithColor(Bitmap bitmap, Bitmap bitmap1, Object surface,int screenWidth, int screenHeight);
+    public native void draw3DCubeWithColor(Object surface,int screenWidth, int screenHeight);
+
+
+    /**
+     * 绘制多个渐变色立方体并移动摄像机位置
+     * @param surface
+     * @param screenWidth
+     * @param screenHeight
+     */
+    public native void draw3DColorCubeCamera(Object surface,int screenWidth, int screenHeight);
 
 //    public native void drawTexture(int[] bitmapArr, int w, int h, Object surface);
 
