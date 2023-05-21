@@ -3792,9 +3792,16 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
         LOGD("f:%f", f);
 //        model = glm::rotate(model, glm::radians(f), glm::vec3(0.5f, 1.0f, 0.0f));
         // glm::LookAt函数需要一个位置、目标和上向量，创造一个观察矩阵
-        view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f),//位置
-                           glm::vec3(0.0f, 0.0f, 0.0f),//目标
-                           glm::vec3(0.0f, 1.0f, 0.0f));//上向量
+//        view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f),//位置
+//                           glm::vec3(0.0f, 0.0f, 0.0f),//目标
+//                           glm::vec3(0.0f, 1.0f, 0.0f));//上向量
+
+
+        float radius = 10.0f;
+        float camX = sin(f/100.0) * radius;
+        float camZ = cos(f/100.0) * radius;
+        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+
         LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
         projection = glm::perspective(glm::radians(45.0f),
                                       (float) screen_width / (float) screen_height, 0.1f,
@@ -3816,7 +3823,17 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
 //            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(f), glm::vec3(1.0f, 0.3f, 0.5f));
+            switch (i % 3) {
+                case 0:
+                    model = glm::rotate(model, glm::radians(f*2), glm::vec3(1.0f, 0.3f, 0.5f));
+                    break;
+                case 1:
+                    model = glm::rotate(model, glm::radians(f), glm::vec3(1.0f, 1.0f, 0.5f));
+                    break;
+                case 2:
+                    model = glm::rotate(model, glm::radians(f*1.5f), glm::vec3(0.5f, 0.0f, 0.5f));
+                    break;
+            }
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
