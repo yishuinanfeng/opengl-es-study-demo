@@ -7,9 +7,12 @@ import android.graphics.drawable.BitmapDrawable;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -76,7 +79,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     private void drawaTexture() {
         Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.liyingai)).getBitmap();
         Bitmap bitmap1 = ((BitmapDrawable) getResources().getDrawable(R.drawable.shiyuanmeili2)).getBitmap();
-        Bitmap bitmap2 = ((BitmapDrawable) getResources().getDrawable(R.drawable.labixiaoxin)).getBitmap();
+
 
 //        BitmapFactory.Options options1 = new BitmapFactory.Options();
 //        options1.inPreferredConfig = Bitmap.Config.RGB_565;
@@ -93,9 +96,34 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 //        drawTexture(bitmap, w, h, getHolder().getSurface());
 //        drawTexture(bitmap,bitmap1,getHolder().getSurface());
 //        draw3DTexture(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
-        draw3DCubeTexture(bitmap2,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
+
+
+
+
+        Bitmap labixiaoxin = ((BitmapDrawable) getResources().getDrawable(R.drawable.labixiaoxin1)).getBitmap();
+        Bitmap gangtieshenbing = ((BitmapDrawable) getResources().getDrawable(R.drawable.gangtieshenbing)).getBitmap();
+        Bitmap maohelaoshu = ((BitmapDrawable) getResources().getDrawable(R.drawable.maohelaoshu)).getBitmap();
+        Bitmap kenan = ((BitmapDrawable) getResources().getDrawable(R.drawable.kenan)).getBitmap();
+        Bitmap zuqiuxiaojiang = ((BitmapDrawable) getResources().getDrawable(R.drawable.zuqiuxiaojiang)).getBitmap();
+        Bitmap qilongzhu = ((BitmapDrawable) getResources().getDrawable(R.drawable.qilongzhu)).getBitmap();
+
+
+        Bitmap[] bitmaps = new Bitmap[6];
+        bitmaps[0] = labixiaoxin;
+        bitmaps[1] = gangtieshenbing;
+        bitmaps[2] = maohelaoshu;
+        bitmaps[3] = qilongzhu;
+        bitmaps[4] = zuqiuxiaojiang;
+        bitmaps[5] = kenan;
+
+        for (int i = 0; i < bitmaps.length; i++) {
+            Log.d("YuvPlayer","Bitmap:" + bitmaps[i]);
+        }
+
+        draw3DCubeTexture(bitmaps,getHolder().getSurface(),surfaceWidth,surfaceHeight);
 //        draw3DCubeWithColor(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
     }
+
 
     public native void loadYuv(Object surface, AssetManager assetManager);
 
@@ -208,13 +236,12 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
     /**
      * 绘制立方体贴纹理
-     * @param bitmap
-     * @param bitmap1
+     * @param bitmapList
      * @param surface
-     * @param screenWidth
-     * @param screenHeight
+     * @param surfaceWidth
+     * @param surfaceHeight
      */
-    public native void draw3DCubeTexture(Bitmap bitmap, Bitmap bitmap1, Object surface, int screenWidth, int screenHeight);
+    public native void draw3DCubeTexture(Bitmap[] bitmapList, Surface surface, int surfaceWidth, int surfaceHeight);
 
     /**
      * 绘制渐变色立方体

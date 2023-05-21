@@ -11,6 +11,9 @@
 #include "glm/glm/gtc/matrix_transform.hpp"
 #include "glm/glm/ext.hpp"
 #include "glm/glm/detail/_noise.hpp"
+#include "BitmapInfo.h"
+#include <vector>
+
 
 using namespace glm;
 
@@ -3117,8 +3120,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobject thiz,
-                                                             jobject bitmap,
-                                                             jobject bitmap1, jobject surface,
+                                                             jobjectArray bitmaps,
+                                                             jobject surface,
                                                              jint screen_width,
                                                              jint screen_height) {
     ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
@@ -3301,33 +3304,15 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
 
     LOGD("glEnableVertexAttribArray(1)");
 
+    std::vector<BitmapInfo> bitmapVector;
+    jsize ref_size = env->GetArrayLength(bitmaps);
+    for (int i = 0; i < ref_size; ++i) {
+        jobject bitmap = env->GetObjectArrayElement(bitmaps, i);
+        LOGD("bitmapVector.push_back(bitmapInfo) &bitmap:%p ,i：%d:" , &bitmap,i);
+        AndroidBitmapInfo bmpInfo;
+        BitmapInfo bitmapInfo(env,bitmap,bmpInfo);
+        bitmapVector.emplace_back(bitmapInfo);
 
-    AndroidBitmapInfo bmpInfo;
-    void *bmpPixels;
-
-    if (AndroidBitmap_getInfo(env, bitmap, &bmpInfo) < 0) {
-        LOGD("AndroidBitmap_getInfo() failed ! ");
-        return;
-    }
-
-    AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
-
-    LOGD("bitmap width:%d,height:%d", bmpInfo.width, bmpInfo.height);
-
-    AndroidBitmapInfo bmpInfo1;
-    void *bmpPixels1;
-
-    if (AndroidBitmap_getInfo(env, bitmap1, &bmpInfo1) < 0) {
-        LOGD("AndroidBitmap_getInfo() failed ! ");
-        return;
-    }
-
-    AndroidBitmap_lockPixels(env, bitmap1, &bmpPixels1);
-
-    LOGD("bitmap width:%d,height:%d", bmpInfo1.width, bmpInfo1.height);
-
-    if (bmpPixels == nullptr || bmpPixels1 == nullptr) {
-        return;
     }
 
 
@@ -3351,9 +3336,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load image, create texture and generate mipmaps
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height, 0, GL_RGBA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1280, 720, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, NULL);
-    AndroidBitmap_unlockPixels(env, bitmap);
     //-------------------- texture1的配置end ------------------------------
 
     //对着色器中的纹理单元变量进行赋值
@@ -3405,10 +3389,18 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
             glBindTexture(GL_TEXTURE_2D, texture1);
 //            glTexSubImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height, 0, GL_RGBA,
 //                         GL_UNSIGNED_BYTE, bmpPixels);
+            int index = i/6;
+            LOGD("index:%d",index);
+            BitmapInfo bmpInfo = bitmapVector[index];
+            void *bmpPixels;
+            AndroidBitmap_lockPixels(env, bmpInfo.bitmap, &bmpPixels);
+            LOGD("bmpInfo.bitmap：%p，bmpInfo.bmpInfo.width:%d,bmpInfo.bmpInfo.height:%d",bmpInfo.bitmap
+                 ,bmpInfo.bmpInfo.width, bmpInfo.bmpInfo.height);
             //替换纹理，比重新使用glTexImage2D性能高
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bmpInfo.width, bmpInfo.height, GL_RGBA,
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bmpInfo.bmpInfo.width, bmpInfo.bmpInfo.height, GL_RGBA,
                             GL_UNSIGNED_BYTE,
                             bmpPixels);
+            AndroidBitmap_unlockPixels(env, bmpInfo.bitmap);
             glDrawArrays(GL_TRIANGLES, i, 6);
         }
 
@@ -3418,7 +3410,6 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
         f++;
         sleep(static_cast<unsigned int>(0.4f));
     }
-
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
