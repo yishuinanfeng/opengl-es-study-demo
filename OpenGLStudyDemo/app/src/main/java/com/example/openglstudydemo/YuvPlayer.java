@@ -7,6 +7,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -123,6 +124,12 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 //        draw3DCubeTexture(bitmaps,getHolder().getSurface(),surfaceWidth,surfaceHeight);
 //        draw3DCubeWithColor(getHolder().getSurface(),surfaceWidth,surfaceHeight);
         draw3DColorCubeCamera(getHolder().getSurface(),surfaceWidth,surfaceHeight);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        handleTouchEvent(event.getX(),event.getY());
+        return super.onTouchEvent(event);
     }
 
 
@@ -263,7 +270,11 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
      */
     public native void draw3DColorCubeCamera(Object surface,int screenWidth, int screenHeight);
 
+    public native void handleTouchEvent(float x, float y);
+
 //    public native void drawTexture(int[] bitmapArr, int w, int h, Object surface);
+
+
 
 
     @Override
@@ -292,4 +303,6 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
         bitmap.getPixels(pix, 0, w, 0, 0, w, h);
         return pix;
     }
+
+
 }

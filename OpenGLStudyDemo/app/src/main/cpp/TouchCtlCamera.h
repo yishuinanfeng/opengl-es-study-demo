@@ -1,0 +1,14 @@
+//
+// Created by 易水南风 on 2023/5/22.
+//
+
+#ifndef OPENGLSTUDYDEMO_TOUCHCTLCAMERA_H
+#define OPENGLSTUDYDEMO_TOUCHCTLCAMERA_H
+
+
+class TouchCtlCamera {
+
+};
+
+
+#endif //OPENGLSTUDYDEMO_TOUCHCTLCAMERA_H

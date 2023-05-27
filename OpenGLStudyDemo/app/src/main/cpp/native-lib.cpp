@@ -12,6 +12,7 @@
 #include "glm/glm/ext.hpp"
 #include "glm/glm/detail/_noise.hpp"
 #include "BitmapInfo.h"
+#include "Shader.h"
 #include <vector>
 
 
@@ -48,44 +49,12 @@ Java_com_example_openglstudydemo_MainActivity_stringFromJNI(
     return env->NewStringUTF(hello.c_str());
 }
 
-GLint initShader(const char *source, int type);
+
 
 
 float getTransformScale(int scaleDuration, int frame);
 
-GLint initShader(const char *source, GLint type) {
-    //创建shader
-    GLint sh = glCreateShader(type);
-    if (sh == 0) {
-        LOGD("glCreateShader %d failed", type);
-        return 0;
-    }
-    //加载shader
-    glShaderSource(sh,
-                   1,//shader数量
-                   &source,
-                   0);//代码长度，传0则读到字符串结尾
 
-    //编译shader
-    glCompileShader(sh);
-
-    GLint status;
-    glGetShaderiv(sh, GL_COMPILE_STATUS, &status);
-    if (status == 0) {
-        LOGD("glCompileShader %d failed", type);
-        LOGD("source %s", source);
-        auto *infoLog = new GLchar[2048];
-        GLsizei length;
-        glGetShaderInfoLog(sh, 2048, &length, infoLog);
-//        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-
-        LOGD("ERROR::SHADER::VERTEX::COMPILATION_FAILED %s", infoLog);
-        return 0;
-    }
-
-    LOGD("glCompileShader %d success", type);
-    return sh;
-}
 
 
 extern "C"
@@ -151,31 +120,9 @@ Java_com_example_openglstudydemo_YuvPlayer_drawPoints(JNIEnv *env, jobject thiz,
         return;
     }
 
-    GLint vsh = initShader(vertexSimpleShape, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
+    Shader shader(vertexSimpleShape,fragSimpleShape);
+    shader.use();
 
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
 
 //    //加入三维顶点数据
 //    static float rectangleVer[] = {
@@ -320,31 +267,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawLine(JNIEnv *env, jobject thiz,
         return;
     }
 
-    GLint vsh = initShader(vertexSimpleShape, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexSimpleShape,fragSimpleShape);
+    shader.use();
 
 //    //加入三维顶点数据
 //    static float rectangleVer[] = {
@@ -448,31 +372,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawLineWithColor(JNIEnv *env, jobjec
         return;
     }
 
-    GLint vsh = initShader(vertexSimpleShapeWithColor, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexSimpleShapeWithColor,fragSimpleShape);
+    shader.use();
 
 //    //加入三维顶点数据
 //    static float rectangleVer[] = {
@@ -579,35 +480,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
         return;
     }
 
-    GLint vsh = initShader(vertexSimpleShape, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-
-    glDeleteShader(vsh);
-    glDeleteShader(fsh);
-
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexSimpleShape,fragSimpleShape);
+    shader.use();
 
 //    //加入三维顶点数据
 //    static float rectangleVer[] = {
@@ -643,7 +517,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
     //窗口显示，交换双缓冲区
     eglSwapBuffers(display, winSurface);
 
-    glDeleteProgram(program);
+    shader.release();
 }
 
 extern "C"
@@ -709,35 +583,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleUniform(JNIEnv *env, jobj
         return;
     }
 
-    GLint fsh = initShader(vertexSimpleUniform, GL_VERTEX_SHADER);
-    GLint vsh = initShader(fragSimpleUniform, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-
-    glDeleteShader(vsh);
-    glDeleteShader(fsh);
-
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexSimpleUniform,fragSimpleUniform);
+    int program = shader.use();
 
     static float triangleVer[] = {
             0.8f, 0.0f, 0.5f,
@@ -763,7 +610,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleUniform(JNIEnv *env, jobj
     //窗口显示，交换双缓冲区
     eglSwapBuffers(display, winSurface);
 
-    glDeleteProgram(program);
+    shader.release();
 }
 
 extern "C"
@@ -829,34 +676,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithColorPass(JNIEnv *env
         return;
     }
 
-    GLint vsh = initShader(vertexSimpleShapeWithColor, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //链接成功后，着色器对象就不需要了，所以要及时释放着色器对象
-    glDeleteShader(vsh);
-    glDeleteShader(fsh);
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexSimpleShapeWithColor,fragSimpleShape);
+    int program = shader.use();
 
     static float triangleVerWithColor[] = {
             0.0f, 0.8f, 0.0f,//顶点
@@ -897,7 +718,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithColorPass(JNIEnv *env
     //窗口显示，交换双缓冲区
     eglSwapBuffers(display, winSurface);
     //释放着色器程序对象
-    glDeleteProgram(program);
+    shader.release();
 }
 
 extern "C"
@@ -964,34 +785,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithBufferObj(JNIEnv *env
         return;
     }
 
-    GLint vsh = initShader(vertexSimpleShapeWithColor, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleShapeWithColor, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //链接成功后，着色器对象就不需要了，所以要及时释放着色器对象
-    glDeleteShader(vsh);
-    glDeleteShader(fsh);
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexSimpleShapeWithColor,fragSimpleShapeWithColor);
+    int program = shader.use();
 
     static float triangleVerWithColor[] = {
             0.0f, 0.8f, 0.0f,//顶点
@@ -1074,8 +869,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithBufferObj(JNIEnv *env
 
     glDeleteBuffers(2, VBOs);
     glDeleteVertexArrays(2, VAOs);
-    //释放着色器程序对象
-    glDeleteProgram(program);
+    shader.release();
 }
 
 extern "C"
@@ -1142,35 +936,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithEBO(JNIEnv *env, jobj
         return;
     }
 
-//    GLint vsh = initShader(vertexSimpleShape, GL_VERTEX_SHADER);
-    GLint vsh = initShader(vertexSimpleShapeWithColor, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleShapeEBO, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //链接成功后，着色器对象就不需要了，所以要及时释放着色器对象
-    glDeleteShader(vsh);
-    glDeleteShader(fsh);
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexSimpleShapeWithColor,fragSimpleShapeEBO);
+    int program = shader.use();
 
     float vertices[] = {
             0.5f, 0.5f, 0.0f,   // 右上角
@@ -1259,7 +1026,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithEBO(JNIEnv *env, jobj
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     //释放着色器程序对象
-    glDeleteProgram(program);
+    shader.release();
 
 //    int k = 12;
 //    LOGD("sizeof GL_UNSIGNED_INT:%d" ,sizeof(k) );
@@ -1328,31 +1095,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTwoTriangle(JNIEnv *env, jobject 
         return;
     }
 
-    GLint vsh = initShader(vertexSimpleShape, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleShape, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexSimpleShape,fragSimpleShape);
+    int program = shader.use();
 
     //加入三维顶点数据
     static float rectangleVer[] = {
@@ -1389,6 +1133,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTwoTriangle(JNIEnv *env, jobject 
 
     //窗口显示，交换双缓冲区
     eglSwapBuffers(display, winSurface);
+
+    shader.release();
 }
 
 #include <android/asset_manager_jni.h>
@@ -1467,31 +1213,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
         return;
     }
 
-    GLint vsh = initShader(vertexShaderWithMatrix, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragYUV420P, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexShaderWithMatrix,fragYUV420P);
+    int program = shader.use();
 
     //加入三维顶点数据
     static float ver[] = {
@@ -1719,6 +1442,9 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
 
     AAsset_close(dataAsset);
 
+
+    shader.release();
+
 }
 
 extern "C"
@@ -1786,31 +1512,8 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
         return;
     }
 
-    GLint vsh = initShader(vertexSimpleTexture, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragSimpleTexture, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexSimpleTexture,fragSimpleTexture);
+    int program = shader.use();
 
     float vertices[] = {
             // positions         // texture coords
@@ -1949,7 +1652,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     //释放着色器程序对象
-    glDeleteProgram(program);
+    shader.release();
 }
 
 extern "C"
@@ -2017,31 +1720,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
         return;
     }
 
-    GLint vsh = initShader(vertexShader3D, GL_VERTEX_SHADER);
-    GLint fsh = initShader(frag3DTexture, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexShader3D,frag3DTexture);
+    int program = shader.use();
 
     float vertices[] = {
             // positions         // texture coords
@@ -2203,7 +1883,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     //释放着色器程序对象
-    glDeleteProgram(program);
+    shader.release();
 }
 
 extern "C"
@@ -2298,33 +1978,9 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
             fragShaderString = fragYUV420P;
             break;
     }
-    GLint vsh = initShader(vertexShaderString, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragShaderString, GL_FRAGMENT_SHADER);
 
-    //todo 时间变量使用遍历循环中的第几帧
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexShaderString,fragShaderString);
+    int program = shader.use();
 
     //加入三维顶点数据
     static float ver[] = {
@@ -2517,6 +2173,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
     }
 
     AAsset_close(dataAsset);
+
+    shader.release();
 }
 
 extern "C"
@@ -2584,33 +2242,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithSoulFled(JNIEnv *env, jobj
     vertexShaderString = vertexShaderWithMatrix;
     fragShaderString = fragSoulFled;
 
-    GLint vsh = initShader(vertexShaderString, GL_VERTEX_SHADER);
-    GLint fsh = initShader(fragShaderString, GL_FRAGMENT_SHADER);
-
-    //todo 时间变量使用遍历循环中的第几帧
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexShaderString,fragShaderString);
+    int program = shader.use();
 
     //加入三维顶点数据
     static float ver[] = {
@@ -2805,6 +2438,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithSoulFled(JNIEnv *env, jobj
     }
 
     AAsset_close(dataAsset);
+
+    shader.release();
 }
 
 extern "C"
@@ -2898,33 +2533,9 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
 //            fragShaderString = fragYUV420P;
 //            break;
 //    }
-    GLint vsh = initShader(GAUSSIAN_BLUR_VERTEX_SHADER, GL_VERTEX_SHADER);
-    GLint fsh = initShader(GAUSSIAN_BLUR_FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
 
-    //todo 时间变量使用遍历循环中的第几帧
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(GAUSSIAN_BLUR_VERTEX_SHADER,GAUSSIAN_BLUR_FRAGMENT_SHADER);
+    int program = shader.use();
 
     //加入三维顶点数据
     static float ver[] = {
@@ -3114,6 +2725,8 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
     }
 
     AAsset_close(dataAsset);
+
+    shader.release();
 }
 
 
@@ -3182,31 +2795,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    GLint vsh = initShader(vertexShader3D, GL_VERTEX_SHADER);
-    GLint fsh = initShader(frag3DTexture, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexShader3D,frag3DTexture);
+    int program = shader.use();
 
     float vertices[] = {
             // 顶点坐标           纹理坐标
@@ -3419,7 +3009,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     glDeleteBuffers(1, &VBO);
 //    glDeleteBuffers(1, &EBO);
     //释放着色器程序对象
-    glDeleteProgram(program);
+    shader.release();
 }
 extern "C"
 JNIEXPORT void JNICALL
@@ -3484,31 +3074,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    GLint vsh = initShader(vertexShader3DGradientColor, GL_VERTEX_SHADER);
-    GLint fsh = initShader(frag3DGradientColor, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexShader3DGradientColor,frag3DGradientColor);
+    int program = shader.use();
 
     float vertices[] = {
             // 顶点坐标                 颜色
@@ -3616,6 +3183,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     //释放着色器程序对象
+    shader.release();
 }
 extern "C"
 JNIEXPORT void JNICALL
@@ -3680,31 +3248,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    GLint vsh = initShader(vertexShader3DGradientColor, GL_VERTEX_SHADER);
-    GLint fsh = initShader(frag3DGradientColor, GL_FRAGMENT_SHADER);
-
-    //创建渲染程序
-    GLint program = glCreateProgram();
-    if (program == 0) {
-        LOGD("glCreateProgram failed");
-        return;
-    }
-
-    //向渲染程序中加入着色器
-    glAttachShader(program, vsh);
-    glAttachShader(program, fsh);
-
-    //链接程序
-    glLinkProgram(program);
-    GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0) {
-        LOGD("glLinkProgram failed");
-        return;
-    }
-    LOGD("glLinkProgram success");
-    //激活渲染程序
-    glUseProgram(program);
+    Shader shader(vertexShader3DGradientColor,frag3DGradientColor);
+    int program = shader.use();
 
     // world space positions of our cubes
     glm::vec3 cubePositions[] = {
@@ -3798,8 +3343,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
 
 
         float radius = 10.0f;
-        float camX = sin(f/100.0) * radius;
-        float camZ = cos(f/100.0) * radius;
+        float camX = sin(f/100.0f) * radius;
+        float camZ = cos(f/100.0f) * radius;
         view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 
         LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
@@ -3855,4 +3400,8 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     //释放着色器程序对象
+    shader.release();
 }
+
+
+
