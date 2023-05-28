@@ -3247,13 +3247,13 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glDepthMask(true);
 
     Shader shader(vertexShader3DGradientColor,frag3DGradientColor);
     int program = shader.use();
 
     // world space positions of our cubes
     glm::vec3 cubePositions[] = {
-            glm::vec3( 0.0f,  0.0f,  0.0f),
             glm::vec3( 2.0f,  5.0f, -15.0f),
             glm::vec3(-1.5f, -2.2f, -2.5f),
             glm::vec3(-3.8f, -2.0f, -12.3f),
@@ -3262,7 +3262,9 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
             glm::vec3( 1.3f, -2.0f, -2.5f),
             glm::vec3( 1.5f,  2.0f, -2.5f),
             glm::vec3( 1.5f,  0.2f, -1.5f),
-            glm::vec3(-1.3f,  1.0f, -1.5f)
+            glm::vec3(-1.3f,  1.0f, -1.5f),
+            glm::vec3( 0.0f,  0.0f,  0.0f),
+
     };
 
     float vertices[] = {
@@ -3360,7 +3362,6 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
         BITMAP_INFO_LOGD("glUniformMatrix4fv");
-
 
         for (unsigned int i = 0; i < 10; i++)
         {

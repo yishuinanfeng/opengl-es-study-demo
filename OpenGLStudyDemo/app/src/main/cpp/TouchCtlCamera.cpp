@@ -7,6 +7,8 @@
 #include <jni.h>
 #include <unistd.h>
 
+TouchCtlCamera *touchCtlCamera = nullptr;
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_openglstudydemo_YuvPlayer_handleTouchEvent(JNIEnv *env, jobject thiz, jint action,
@@ -14,39 +16,43 @@ Java_com_example_openglstudydemo_YuvPlayer_handleTouchEvent(JNIEnv *env, jobject
 
     TouchCtlCamera_LOGD("handleTouchEvent action：%d,xpos：%f,ypos:%f:",action, xpos, ypos);
 
+    if (touchCtlCamera == nullptr){
+        return;
+    }
+
     switch (action) {
         case TouchActionMode::ACTION_DOWN:
-            lastX = xpos;
-            lastY = ypos;
+            touchCtlCamera->lastX = xpos;
+            touchCtlCamera->lastY = ypos;
             break;
         case TouchActionMode::ACTION_MOVE:
-            float xoffset = xpos - lastX;
-            float yoffset = lastY - ypos;
-            lastX = xpos;
-            lastY = ypos;
+            float xoffset = xpos - touchCtlCamera->lastX;
+            float yoffset = touchCtlCamera->lastY - ypos;
+            touchCtlCamera->lastX = xpos;
+            touchCtlCamera->lastY = ypos;
 
             float sensitivity = 0.02;
             xoffset *= sensitivity;
             yoffset *= sensitivity;
 
             //根据触摸的偏移量计算出角度的变化
-            yaw += xoffset;
-            pitch += yoffset;
+            touchCtlCamera->yaw += xoffset;
+            touchCtlCamera->pitch += yoffset;
 
-            if (pitch > 89.0f) {
-                pitch = 89.0f;
+            if (touchCtlCamera->pitch > 89.0f) {
+                touchCtlCamera->pitch = 89.0f;
             }
 
-            if (pitch < -89.0f) {
-                pitch = -89.0f;
+            if (touchCtlCamera->pitch < -89.0f) {
+                touchCtlCamera->pitch = -89.0f;
             }
 
             //计算出角度变化导致的方向向量的变化
             glm::vec3 front;
-            front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-            front.y = sin(glm::radians(pitch));
-            front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-            cameraFront = glm::normalize(front);
+            front.x = cos(glm::radians(touchCtlCamera->yaw)) * cos(glm::radians(touchCtlCamera->pitch));
+            front.y = sin(glm::radians(touchCtlCamera->pitch));
+            front.z = sin(glm::radians(touchCtlCamera->yaw)) * cos(glm::radians(touchCtlCamera->pitch));
+            touchCtlCamera->cameraFront = glm::normalize(front);
             break;
 //        case TouchActionMode::ACTION_UP:
 //            lastX = 0.0f;
@@ -67,12 +73,21 @@ Java_com_example_openglstudydemo_YuvPlayer_handleTouchEvent(JNIEnv *env, jobject
 
 }
 
+
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_openglstudydemo_YuvPlayer_draw3DCubesCameraTouchCtl(JNIEnv *env, jobject thiz,
                                                                      jobject surface,
                                                                      jint screen_width,
                                                                      jint screen_height) {
+    touchCtlCamera = new TouchCtlCamera();
+    touchCtlCamera->draw3DCubesCameraTouchCtl(env,thiz,surface,screen_width,screen_height);
+}
+
+void TouchCtlCamera::draw3DCubesCameraTouchCtl(JNIEnv *env, jobject thiz, jobject surface,
+                                               jint screen_width, jint screen_height) {
+
     ANativeWindow *nwin = ANativeWindow_fromSurface(env, surface);
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -129,6 +144,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubesCameraTouchCtl(JNIEnv *env
     }
 
     glEnable(GL_DEPTH_TEST);
+    glDepthMask(true);
     glEnable(GL_CULL_FACE);
 
     Shader shader(vertexShader3DGradientColor, frag3DGradientColor);
