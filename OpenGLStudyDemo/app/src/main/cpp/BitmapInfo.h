@@ -5,8 +5,11 @@
 #ifndef OPENGLSTUDYDEMO_BITMAPINFO_H
 #define OPENGLSTUDYDEMO_BITMAPINFO_H
 
-#define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"BitmapInfo",__VA_ARGS__)
+#define BITMAP_INFO_LOGD(...) __android_log_print(ANDROID_LOG_WARN,"BitmapInfo",__VA_ARGS__)
+
+
 #include <android/log.h>
+
 class BitmapInfo {
 public:
     AndroidBitmapInfo bmpInfo;

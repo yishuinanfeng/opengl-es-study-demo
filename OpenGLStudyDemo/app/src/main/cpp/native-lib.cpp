@@ -19,7 +19,7 @@
 using namespace glm;
 
 
-#define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"yuvOpenGlDemo",__VA_ARGS__)
+#define BITMAP_INFO_LOGD(...) __android_log_print(ANDROID_LOG_WARN,"yuvOpenGlDemo",__VA_ARGS__)
 
 enum enum_filter_type {
     //无滤镜效果
@@ -69,12 +69,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawPoints(JNIEnv *env, jobject thiz,
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -90,16 +90,16 @@ Java_com_example_openglstudydemo_YuvPlayer_drawPoints(JNIEnv *env, jobject thiz,
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
-//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+//    BITMAP_INFO_LOGD("eglChooseConfig eglConfig:" + eglConfig);
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -110,13 +110,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawPoints(JNIEnv *env, jobject thiz,
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -155,7 +155,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawPoints(JNIEnv *env, jobject thiz,
 
 float getTransformRatio(int scaleDuration, int frame) {
     int remainder = frame % scaleDuration;
-    LOGD("ScaleFilter onDraw remainder:%d", remainder);
+    BITMAP_INFO_LOGD("ScaleFilter onDraw remainder:%d", remainder);
     float ratio;
     //放大的时候是线性变换，即放大系数和时间成正比。算出每个周期的帧数占一个周期的比例
 //    if (remainder < scaleDuration / 2) {
@@ -166,7 +166,7 @@ float getTransformRatio(int scaleDuration, int frame) {
     ratio = static_cast<float>(remainder * 1.0F / scaleDuration);
 //    }
 
-    LOGD("ratio:%f", ratio);
+    BITMAP_INFO_LOGD("ratio:%f", ratio);
 
     //最大缩放倍数为1.5F
     float scale = MAX_DIFF_SCALE * ratio;
@@ -174,14 +174,14 @@ float getTransformRatio(int scaleDuration, int frame) {
     if (scale < 1) {
         scale = 1;
     }
-    LOGD("scale:%f", scale);
+    BITMAP_INFO_LOGD("scale:%f", scale);
     return scale;
 
 }
 
 float getTransformScale(int scaleDuration, int frame) {
     int remainder = frame % scaleDuration;
-    LOGD("ScaleFilter onDraw remainder:%d", remainder);
+    BITMAP_INFO_LOGD("ScaleFilter onDraw remainder:%d", remainder);
     float ratio;
     //放大的时候是线性变换，即放大系数和时间成正比。算出每个周期的帧数占一个周期的比例
 //    if (remainder < scaleDuration / 2) {
@@ -191,7 +191,7 @@ float getTransformScale(int scaleDuration, int frame) {
     ratio = static_cast<float>(pow(remainder * 1.0F / scaleDuration, 3));
 //    }
 
-    LOGD("ratio:%f", ratio);
+    BITMAP_INFO_LOGD("ratio:%f", ratio);
 
     //最大缩放倍数为1.5F
     float scale = MAX_DIFF_SCALE * ratio;
@@ -199,7 +199,7 @@ float getTransformScale(int scaleDuration, int frame) {
     if (scale < 1) {
         scale = 1;
     }
-    LOGD("scale:%f", scale);
+    BITMAP_INFO_LOGD("scale:%f", scale);
     return scale;
 
 }
@@ -216,12 +216,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawLine(JNIEnv *env, jobject thiz,
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -237,16 +237,16 @@ Java_com_example_openglstudydemo_YuvPlayer_drawLine(JNIEnv *env, jobject thiz,
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
-//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+//    BITMAP_INFO_LOGD("eglChooseConfig eglConfig:" + eglConfig);
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -257,13 +257,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawLine(JNIEnv *env, jobject thiz,
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -321,12 +321,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawLineWithColor(JNIEnv *env, jobjec
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -342,16 +342,16 @@ Java_com_example_openglstudydemo_YuvPlayer_drawLineWithColor(JNIEnv *env, jobjec
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
-//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+//    BITMAP_INFO_LOGD("eglChooseConfig eglConfig:" + eglConfig);
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -362,13 +362,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawLineWithColor(JNIEnv *env, jobjec
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -429,12 +429,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -450,16 +450,16 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
-//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+//    BITMAP_INFO_LOGD("eglChooseConfig eglConfig:" + eglConfig);
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -470,13 +470,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangle(JNIEnv *env, jobject thi
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -532,12 +532,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleUniform(JNIEnv *env, jobj
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -553,16 +553,16 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleUniform(JNIEnv *env, jobj
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
-//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+//    BITMAP_INFO_LOGD("eglChooseConfig eglConfig:" + eglConfig);
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -573,13 +573,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleUniform(JNIEnv *env, jobj
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -625,12 +625,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithColorPass(JNIEnv *env
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -646,16 +646,16 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithColorPass(JNIEnv *env
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
-//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+//    BITMAP_INFO_LOGD("eglChooseConfig eglConfig:" + eglConfig);
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -666,13 +666,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithColorPass(JNIEnv *env
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -733,12 +733,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithBufferObj(JNIEnv *env
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -755,16 +755,16 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithBufferObj(JNIEnv *env
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
-//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+//    BITMAP_INFO_LOGD("eglChooseConfig eglConfig:" + eglConfig);
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -775,13 +775,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithBufferObj(JNIEnv *env
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -884,12 +884,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithEBO(JNIEnv *env, jobj
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -906,16 +906,16 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithEBO(JNIEnv *env, jobj
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
-//    LOGD("eglChooseConfig eglConfig:" + eglConfig);
+//    BITMAP_INFO_LOGD("eglChooseConfig eglConfig:" + eglConfig);
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -926,13 +926,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithEBO(JNIEnv *env, jobj
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -1029,7 +1029,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTriangleWithEBO(JNIEnv *env, jobj
     shader.release();
 
 //    int k = 12;
-//    LOGD("sizeof GL_UNSIGNED_INT:%d" ,sizeof(k) );
+//    BITMAP_INFO_LOGD("sizeof GL_UNSIGNED_INT:%d" ,sizeof(k) );
 }
 
 extern "C"
@@ -1044,12 +1044,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTwoTriangle(JNIEnv *env, jobject 
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -1067,14 +1067,14 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTwoTriangle(JNIEnv *env, jobject 
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -1085,13 +1085,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTwoTriangle(JNIEnv *env, jobject 
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -1146,17 +1146,17 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
                                                    jobject surface, jobject assetManager) {
-    LOGD("loadYuv");
+    BITMAP_INFO_LOGD("loadYuv");
 
 
 //    const char *url = env->GetStringUTFChars(jUrl, 0);
 //
 //    FILE *fp = fopen(url, "rb");
 //    if (!fp) {
-//        LOGD("oepn file %s fail", url);
+//        BITMAP_INFO_LOGD("oepn file %s fail", url);
 //        return;
 //    }
-//    LOGD("open ulr is %s", url);
+//    BITMAP_INFO_LOGD("open ulr is %s", url);
     //1.获取原始窗口
     //be sure to use ANativeWindow_release()
     // * when done with it so that it doesn't leak.
@@ -1164,12 +1164,12 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -1185,14 +1185,14 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -1203,13 +1203,13 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -1379,7 +1379,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
     //纵帧数
     long frameCount = dataBufferSize / (width * height * 3 / 2);
 
-    LOGD("frameCount:%d", frameCount);
+    BITMAP_INFO_LOGD("frameCount:%d", frameCount);
 
 
     for (int i = 0; i < frameCount; ++i) {
@@ -1392,7 +1392,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuv(JNIEnv *env, jobject thiz,
         //读取v分量
         int bufVRead = AAsset_read(dataAsset, buf[2],
                                    width * height / 4);  //begin to read data once time
-        LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
+        BITMAP_INFO_LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
 
         //读到文件末尾了
         if (bufYRead <= 0 || bufURead <= 0 || bufVRead <= 0) {
@@ -1453,7 +1453,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
                                                        jobject bitmap1,
                                                        jobject surface) {
 
-    //LOGD("drawTexture width:%d,height:%d", width, height);
+    //BITMAP_INFO_LOGD("drawTexture width:%d,height:%d", width, height);
     //1.获取原始窗口
     //be sure to use ANativeWindow_release()
     // * when done with it so that it doesn't leak.
@@ -1461,12 +1461,12 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -1484,14 +1484,14 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -1502,13 +1502,13 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -1539,7 +1539,7 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
+    BITMAP_INFO_LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
@@ -1549,32 +1549,32 @@ Java_com_example_openglstudydemo_YuvPlayer_drawTexture(JNIEnv *env, jobject thiz
                           (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    LOGD("glEnableVertexAttribArray(1)");
+    BITMAP_INFO_LOGD("glEnableVertexAttribArray(1)");
 
 
     AndroidBitmapInfo bmpInfo;
     void *bmpPixels;
 
     if (AndroidBitmap_getInfo(env, bitmap, &bmpInfo) < 0) {
-        LOGD("AndroidBitmap_getInfo() failed ! ");
+        BITMAP_INFO_LOGD("AndroidBitmap_getInfo() failed ! ");
         return;
     }
 
     AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
 
-    LOGD("bitmap width:%d,height:%d", bmpInfo.width, bmpInfo.height);
+    BITMAP_INFO_LOGD("bitmap width:%d,height:%d", bmpInfo.width, bmpInfo.height);
 
     AndroidBitmapInfo bmpInfo1;
     void *bmpPixels1;
 
     if (AndroidBitmap_getInfo(env, bitmap1, &bmpInfo1) < 0) {
-        LOGD("AndroidBitmap_getInfo() failed ! ");
+        BITMAP_INFO_LOGD("AndroidBitmap_getInfo() failed ! ");
         return;
     }
 
     AndroidBitmap_lockPixels(env, bitmap1, &bmpPixels1);
 
-    LOGD("bitmap width:%d,height:%d", bmpInfo1.width, bmpInfo1.height);
+    BITMAP_INFO_LOGD("bitmap width:%d,height:%d", bmpInfo1.width, bmpInfo1.height);
 
     if (bmpPixels == nullptr || bmpPixels1 == nullptr) {
         return;
@@ -1661,7 +1661,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
                                                          jobject bitmap1, jobject surface,
                                                          jint screenWidth, jint screenHeight) {
 
-    //LOGD("drawTexture width:%d,height:%d", width, height);
+    //BITMAP_INFO_LOGD("drawTexture width:%d,height:%d", width, height);
     //1.获取原始窗口
     //be sure to use ANativeWindow_release()
     // * when done with it so that it doesn't leak.
@@ -1669,12 +1669,12 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -1692,14 +1692,14 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -1710,13 +1710,13 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -1747,7 +1747,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
+    BITMAP_INFO_LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
@@ -1757,7 +1757,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
                           (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    LOGD("glEnableVertexAttribArray(1)");
+    BITMAP_INFO_LOGD("glEnableVertexAttribArray(1)");
     //模型矩阵，将局部坐标转换为世界坐标
     glm::mat4 model = glm::mat4(1.0f);
     //视图矩阵，确定物体和摄像机的相对位置
@@ -1768,43 +1768,43 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DTexture(JNIEnv *env, jobject th
     model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    LOGD("glm::perspective:%d,height:%d", screenWidth, screenHeight);
+    BITMAP_INFO_LOGD("glm::perspective:%d,height:%d", screenWidth, screenHeight);
     projection = glm::perspective(glm::radians(45.0f), (float) screenWidth / (float) screenHeight,
                                   0.1f,
                                   100.0f);
-    LOGD("mat4 init");
+    BITMAP_INFO_LOGD("mat4 init");
     GLint modelLoc = glGetUniformLocation(program, "model");
     GLint viewLoc = glGetUniformLocation(program, "view");
     GLint projectionLoc = glGetUniformLocation(program, "projection");
-    LOGD("glGetUniformLocation");
+    BITMAP_INFO_LOGD("glGetUniformLocation");
     // pass them to the shaders (3 different ways)
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    LOGD("glUniformMatrix4fv");
+    BITMAP_INFO_LOGD("glUniformMatrix4fv");
     AndroidBitmapInfo bmpInfo;
     void *bmpPixels;
 
     if (AndroidBitmap_getInfo(env, bitmap, &bmpInfo) < 0) {
-        LOGD("AndroidBitmap_getInfo() failed ! ");
+        BITMAP_INFO_LOGD("AndroidBitmap_getInfo() failed ! ");
         return;
     }
 
     AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
 
-    LOGD("bitmap width:%d,height:%d", bmpInfo.width, bmpInfo.height);
+    BITMAP_INFO_LOGD("bitmap width:%d,height:%d", bmpInfo.width, bmpInfo.height);
 
     AndroidBitmapInfo bmpInfo1;
     void *bmpPixels1;
 
     if (AndroidBitmap_getInfo(env, bitmap1, &bmpInfo1) < 0) {
-        LOGD("AndroidBitmap_getInfo() failed ! ");
+        BITMAP_INFO_LOGD("AndroidBitmap_getInfo() failed ! ");
         return;
     }
 
     AndroidBitmap_lockPixels(env, bitmap1, &bmpPixels1);
 
-    LOGD("bitmap width:%d,height:%d", bmpInfo1.width, bmpInfo1.height);
+    BITMAP_INFO_LOGD("bitmap width:%d,height:%d", bmpInfo1.width, bmpInfo1.height);
 
     if (bmpPixels == nullptr || bmpPixels1 == nullptr) {
         return;
@@ -1897,12 +1897,12 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -1918,14 +1918,14 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -1936,13 +1936,13 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -2094,7 +2094,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
     //纵帧数
     long frameCount = dataBufferSize / (width * height * 3 / 2);
 
-    LOGD("frameCount:%d", frameCount);
+    BITMAP_INFO_LOGD("frameCount:%d", frameCount);
 
     int scaleDuration = frameCount / 10;
 
@@ -2108,7 +2108,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
         //读取v分量
         int bufVRead = AAsset_read(dataAsset, buf[2],
                                    width * height / 4);  //begin to read data once time
-        LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
+        BITMAP_INFO_LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
 
         //读到文件末尾了
         if (bufYRead <= 0 || bufURead <= 0 || bufVRead <= 0) {
@@ -2130,7 +2130,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithFilterEffect(JNIEnv *env, 
         }
 
 
-//        LOGD("resultMatrix:%d,bufURead:%d,bufVRead:%d", resultMatrix, , bufVRead);
+//        BITMAP_INFO_LOGD("resultMatrix:%d,bufURead:%d,bufVRead:%d", resultMatrix, , bufVRead);
 
         //  int c = dataRead(mManeger, "video1_640_272.yuv");
 
@@ -2186,12 +2186,12 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithSoulFled(JNIEnv *env, jobj
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -2207,14 +2207,14 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithSoulFled(JNIEnv *env, jobj
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -2225,13 +2225,13 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithSoulFled(JNIEnv *env, jobj
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -2359,7 +2359,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithSoulFled(JNIEnv *env, jobj
     //纵帧数
     long frameCount = dataBufferSize / (width * height * 3 / 2);
 
-    LOGD("frameCount:%d", frameCount);
+    BITMAP_INFO_LOGD("frameCount:%d", frameCount);
 
     int scaleDuration = frameCount / 10;
 
@@ -2373,7 +2373,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithSoulFled(JNIEnv *env, jobj
         //读取v分量
         int bufVRead = AAsset_read(dataAsset, buf[2],
                                    width * height / 4);  //begin to read data once time
-        LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
+        BITMAP_INFO_LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
 
         //读到文件末尾了
         if (bufYRead <= 0 || bufURead <= 0 || bufVRead <= 0) {
@@ -2395,7 +2395,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithSoulFled(JNIEnv *env, jobj
         glUniform1f(uScaleLocation, scale);
 
 
-//        LOGD("resultMatrix:%d,bufURead:%d,bufVRead:%d", resultMatrix, , bufVRead);
+//        BITMAP_INFO_LOGD("resultMatrix:%d,bufURead:%d,bufVRead:%d", resultMatrix, , bufVRead);
 
         //  int c = dataRead(mManeger, "video1_640_272.yuv");
 
@@ -2452,12 +2452,12 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -2473,14 +2473,14 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -2491,13 +2491,13 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -2649,7 +2649,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
     //纵帧数
     long frameCount = dataBufferSize / (width * height * 3 / 2);
 
-    LOGD("frameCount:%d", frameCount);
+    BITMAP_INFO_LOGD("frameCount:%d", frameCount);
 
     int scaleDuration = frameCount / 10;
 
@@ -2663,7 +2663,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
         //读取v分量
         int bufVRead = AAsset_read(dataAsset, buf[2],
                                    width * height / 4);  //begin to read data once time
-        LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
+        BITMAP_INFO_LOGD("bufYRead:%d,bufURead:%d,bufVRead:%d", bufYRead, bufURead, bufVRead);
 
         //读到文件末尾了
         if (bufYRead <= 0 || bufURead <= 0 || bufVRead <= 0) {
@@ -2682,7 +2682,7 @@ Java_com_example_openglstudydemo_YuvPlayer_loadYuvWithBlurEffect(JNIEnv *env, jo
 //        glUniformMatrix4fv(uScaleMatrixLocation, 1, GL_FALSE, glm::value_ptr(resultMatrix));
         glUniformMatrix4fv(uScaleMatrixLocation, 1, GL_FALSE, glm::value_ptr(scaleMatrix));
 
-//        LOGD("resultMatrix:%d,bufURead:%d,bufVRead:%d", resultMatrix, , bufVRead);
+//        BITMAP_INFO_LOGD("resultMatrix:%d,bufURead:%d,bufVRead:%d", resultMatrix, , bufVRead);
 
         //  int c = dataRead(mManeger, "video1_640_272.yuv");
 
@@ -2741,12 +2741,12 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -2764,14 +2764,14 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -2782,13 +2782,13 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -2882,7 +2882,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
 //    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 //    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
+    BITMAP_INFO_LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
@@ -2892,13 +2892,13 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
                           (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    LOGD("glEnableVertexAttribArray(1)");
+    BITMAP_INFO_LOGD("glEnableVertexAttribArray(1)");
 
     std::vector<BitmapInfo> bitmapVector;
     jsize ref_size = env->GetArrayLength(bitmaps);
     for (int i = 0; i < ref_size; ++i) {
         jobject bitmap = env->GetObjectArrayElement(bitmaps, i);
-        LOGD("bitmapVector.push_back(bitmapInfo) &bitmap:%p ,i：%d:" , &bitmap,i);
+        BITMAP_INFO_LOGD("bitmapVector.push_back(bitmapInfo) &bitmap:%p ,i：%d:" , &bitmap, i);
         AndroidBitmapInfo bmpInfo;
         BitmapInfo bitmapInfo(env,bitmap,bmpInfo);
         bitmapVector.emplace_back(bitmapInfo);
@@ -2950,20 +2950,20 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
         model = glm::rotate(model, glm::radians(f), glm::vec3(0.5f, 1.0f, 0.0f));
         // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -4.0f));
-        LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
+        BITMAP_INFO_LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
         projection = glm::perspective(glm::radians(45.0f),
                                       (float) screen_width / (float) screen_height, 0.1f,
                                       100.0f);
-        LOGD("mat4 init");
+        BITMAP_INFO_LOGD("mat4 init");
         GLint modelLoc = glGetUniformLocation(program, "model");
         GLint viewLoc = glGetUniformLocation(program, "view");
         GLint projectionLoc = glGetUniformLocation(program, "projection");
-        LOGD("glGetUniformLocation");
+        BITMAP_INFO_LOGD("glGetUniformLocation");
         // pass them to the shaders (3 different ways)
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-        LOGD("glUniformMatrix4fv");
+        BITMAP_INFO_LOGD("glUniformMatrix4fv");
 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -2980,12 +2980,12 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
 //            glTexSubImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height, 0, GL_RGBA,
 //                         GL_UNSIGNED_BYTE, bmpPixels);
             int index = i/6;
-            LOGD("index:%d",index);
+            BITMAP_INFO_LOGD("index:%d", index);
             BitmapInfo bmpInfo = bitmapVector[index];
             void *bmpPixels;
             AndroidBitmap_lockPixels(env, bmpInfo.bitmap, &bmpPixels);
-            LOGD("bmpInfo.bitmap：%p，bmpInfo.bmpInfo.width:%d,bmpInfo.bmpInfo.height:%d",bmpInfo.bitmap
-                 ,bmpInfo.bmpInfo.width, bmpInfo.bmpInfo.height);
+            BITMAP_INFO_LOGD("bmpInfo.bitmap：%p，bmpInfo.bmpInfo.width:%d,bmpInfo.bmpInfo.height:%d", bmpInfo.bitmap
+                 , bmpInfo.bmpInfo.width, bmpInfo.bmpInfo.height);
             //替换纹理，比重新使用glTexImage2D性能高
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bmpInfo.bmpInfo.width, bmpInfo.bmpInfo.height, GL_RGBA,
                             GL_UNSIGNED_BYTE,
@@ -3020,12 +3020,12 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -3043,14 +3043,14 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -3061,13 +3061,13 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -3125,7 +3125,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
+    BITMAP_INFO_LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0);
@@ -3146,11 +3146,11 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
         //透视投影矩阵，实现近大远小的效果
         glm::mat4 projection = glm::mat4(1.0f);
         //沿着向量(0.5f, 1.0f, 0.0f)旋转
-        LOGD("f:%f", f);
+        BITMAP_INFO_LOGD("f:%f", f);
         model = glm::rotate(model, glm::radians(f), glm::vec3(0.5f, 1.0f, 0.0f));
         // 注意，我们将矩阵向我们要进行移动场景的反方向移动。（右手坐标系，所以z正方形从屏幕指向外部）
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
-        LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
+        BITMAP_INFO_LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
         projection = glm::perspective(glm::radians(45.0f),
                                       (float) screen_width / (float) screen_height, 0.1f,
                                       100.0f);
@@ -3158,12 +3158,12 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeWithColor(JNIEnv *env, jobj
         GLint modelLoc = glGetUniformLocation(program, "model");
         GLint viewLoc = glGetUniformLocation(program, "view");
         GLint projectionLoc = glGetUniformLocation(program, "projection");
-        LOGD("glGetUniformLocation");
+        BITMAP_INFO_LOGD("glGetUniformLocation");
         // pass them to the shaders (3 different ways)
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-        LOGD("glUniformMatrix4fv");
+        BITMAP_INFO_LOGD("glUniformMatrix4fv");
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
@@ -3194,12 +3194,12 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
     //获取Display
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        LOGD("egl display failed");
+        BITMAP_INFO_LOGD("egl display failed");
         return;
     }
     //2.初始化egl，后两个参数为主次版本号
     if (EGL_TRUE != eglInitialize(display, 0, 0)) {
-        LOGD("eglInitialize failed");
+        BITMAP_INFO_LOGD("eglInitialize failed");
         return;
     }
 
@@ -3217,14 +3217,14 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
     };
 
     if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig, 1, &configNum)) {
-        LOGD("eglChooseConfig failed");
+        BITMAP_INFO_LOGD("eglChooseConfig failed");
         return;
     }
 
     //3.2创建surface(egl和NativeWindow进行关联。最后一个参数为属性信息，0表示默认版本)
     EGLSurface winSurface = eglCreateWindowSurface(display, eglConfig, nwin, 0);
     if (winSurface == EGL_NO_SURFACE) {
-        LOGD("eglCreateWindowSurface failed");
+        BITMAP_INFO_LOGD("eglCreateWindowSurface failed");
         return;
     }
 
@@ -3235,13 +3235,13 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
     //EGL_NO_CONTEXT表示不需要多个设备共享上下文
     EGLContext context = eglCreateContext(display, eglConfig, EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
-        LOGD("eglCreateContext failed");
+        BITMAP_INFO_LOGD("eglCreateContext failed");
         return;
     }
     //将egl和opengl关联
     //两个surface一个读一个写。第二个一般用来离线渲染？
     if (EGL_TRUE != eglMakeCurrent(display, winSurface, winSurface, context)) {
-        LOGD("eglMakeCurrent failed");
+        BITMAP_INFO_LOGD("eglMakeCurrent failed");
         return;
     }
 
@@ -3313,7 +3313,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
+    BITMAP_INFO_LOGD("glBufferData GL_ELEMENT_ARRAY_BUFFER");
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0);
@@ -3334,7 +3334,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
         //透视投影矩阵，实现近大远小的效果
         glm::mat4 projection = glm::mat4(1.0f);
         //沿着向量(0.5f, 1.0f, 0.0f)旋转
-        LOGD("f:%f", f);
+        BITMAP_INFO_LOGD("f:%f", f);
 //        model = glm::rotate(model, glm::radians(f), glm::vec3(0.5f, 1.0f, 0.0f));
         // glm::LookAt函数需要一个位置、目标和上向量，创造一个观察矩阵
 //        view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f),//位置
@@ -3347,7 +3347,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
         float camZ = cos(f/100.0f) * radius;
         view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 
-        LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
+        BITMAP_INFO_LOGD("glm::perspective:%d,height:%d", screen_width, screen_height);
         projection = glm::perspective(glm::radians(45.0f),
                                       (float) screen_width / (float) screen_height, 0.1f,
                                       100.0f);
@@ -3355,11 +3355,11 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
         GLint modelLoc = glGetUniformLocation(program, "model");
         GLint viewLoc = glGetUniformLocation(program, "view");
         GLint projectionLoc = glGetUniformLocation(program, "projection");
-        LOGD("glGetUniformLocation");
+        BITMAP_INFO_LOGD("glGetUniformLocation");
         // pass them to the shaders (3 different ways)
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-        LOGD("glUniformMatrix4fv");
+        BITMAP_INFO_LOGD("glUniformMatrix4fv");
 
 
         for (unsigned int i = 0; i < 10; i++)

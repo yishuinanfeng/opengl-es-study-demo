@@ -8,7 +8,7 @@
 
 #include <GLES3/gl3.h>
 #include <android/log.h>
-#define LOGD(...) __android_log_print(ANDROID_LOG_WARN,"Shader",__VA_ARGS__)
+#define Shader_LOGD(...) __android_log_print(ANDROID_LOG_WARN,"Shader",__VA_ARGS__)
 
 class Shader {
 

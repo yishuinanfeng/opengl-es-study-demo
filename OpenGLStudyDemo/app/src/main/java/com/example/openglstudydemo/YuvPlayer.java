@@ -123,13 +123,15 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
 //        draw3DCubeTexture(bitmaps,getHolder().getSurface(),surfaceWidth,surfaceHeight);
 //        draw3DCubeWithColor(getHolder().getSurface(),surfaceWidth,surfaceHeight);
-        draw3DColorCubeCamera(getHolder().getSurface(),surfaceWidth,surfaceHeight);
+//        draw3DColorCubeCamera(getHolder().getSurface(),surfaceWidth,surfaceHeight);
+        draw3DCubesCameraTouchCtl(getHolder().getSurface(),surfaceWidth,surfaceHeight);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        handleTouchEvent(event.getX(),event.getY());
-        return super.onTouchEvent(event);
+        int action = event.getAction() & MotionEvent.ACTION_MASK;
+        handleTouchEvent(action,event.getX(),event.getY());
+        return true;
     }
 
 
@@ -270,7 +272,9 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
      */
     public native void draw3DColorCubeCamera(Object surface,int screenWidth, int screenHeight);
 
-    public native void handleTouchEvent(float x, float y);
+    public native void draw3DCubesCameraTouchCtl(Object surface,int screenWidth, int screenHeight);
+
+    public native void handleTouchEvent(int action,float x, float y);
 
 //    public native void drawTexture(int[] bitmapArr, int w, int h, Object surface);
 

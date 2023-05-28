@@ -11,8 +11,8 @@ BitmapInfo::BitmapInfo(JNIEnv *env,jobject bitmap,AndroidBitmapInfo bmpInfo){
     this->bitmap = bitmap;
     this->bmpInfo = bmpInfo;
     int get_info = AndroidBitmap_getInfo(env, bitmap, &this->bmpInfo);
-    LOGD("BitmapInfo AndroidBitmap_getInfo %d", get_info);
-    LOGD("BitmapInfo bitmap width:%d,height:%d", this->bmpInfo.width, this->bmpInfo.height);
+    BITMAP_INFO_LOGD("BitmapInfo AndroidBitmap_getInfo %d", get_info);
+    BITMAP_INFO_LOGD("BitmapInfo bitmap width:%d,height:%d", this->bmpInfo.width, this->bmpInfo.height);
 }
 
 

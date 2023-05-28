@@ -9,7 +9,7 @@ GLint Shader::initShader(const char *source, GLint type) {
     //创建shader
     GLint sh = glCreateShader(type);
     if (sh == 0) {
-        LOGD("glCreateShader %d failed", type);
+        Shader_LOGD("glCreateShader %d failed", type);
         return 0;
     }
     //加载shader
@@ -21,21 +21,22 @@ GLint Shader::initShader(const char *source, GLint type) {
     //编译shader
     glCompileShader(sh);
 
+    //打印出编译错误信息
     GLint status;
     glGetShaderiv(sh, GL_COMPILE_STATUS, &status);
     if (status == 0) {
-        LOGD("glCompileShader %d failed", type);
-        LOGD("source %s", source);
+        Shader_LOGD("glCompileShader %d failed", type);
+        Shader_LOGD("source %s", source);
         auto *infoLog = new GLchar[2048];
         GLsizei length;
         glGetShaderInfoLog(sh, 2048, &length, infoLog);
 //        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
 
-        LOGD("ERROR::SHADER::VERTEX::COMPILATION_FAILED %s", infoLog);
+        Shader_LOGD("ERROR::SHADER::VERTEX::COMPILATION_FAILED %s", infoLog);
         return 0;
     }
 
-    LOGD("glCompileShader %d success", type);
+    Shader_LOGD("glCompileShader %d success", type);
     return sh;
 }
 
@@ -46,7 +47,7 @@ int Shader::use() {
     //创建渲染程序
     program = glCreateProgram();
     if (program == 0) {
-        LOGD("glCreateProgram failed");
+        Shader_LOGD("glCreateProgram failed");
         return 0;
     }
 
@@ -59,10 +60,10 @@ int Shader::use() {
     GLint status = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &status);
     if (status == 0) {
-        LOGD("glLinkProgram failed");
+        Shader_LOGD("glLinkProgram failed");
         return 0;
     }
-    LOGD("glLinkProgram success");
+    Shader_LOGD("glLinkProgram success");
 
     glDeleteShader(vsh);
     glDeleteShader(fsh);
