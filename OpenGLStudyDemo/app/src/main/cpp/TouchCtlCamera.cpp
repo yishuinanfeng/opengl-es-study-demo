@@ -25,7 +25,7 @@ Java_com_example_openglstudydemo_YuvPlayer_handleTouchEvent(JNIEnv *env, jobject
             lastX = xpos;
             lastY = ypos;
 
-            float sensitivity = 0.05;
+            float sensitivity = 0.02;
             xoffset *= sensitivity;
             yoffset *= sensitivity;
 
