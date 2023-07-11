@@ -2893,7 +2893,7 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DCubeTexture(JNIEnv *env, jobjec
     glEnableVertexAttribArray(1);
 
     BITMAP_INFO_LOGD("glEnableVertexAttribArray(1)");
-
+    //持有图片信息类BitmapInfo的集合，这里是保存6个面的纹理对应的图片信息
     std::vector<BitmapInfo> bitmapVector;
     jsize ref_size = env->GetArrayLength(bitmaps);
     for (int i = 0; i < ref_size; ++i) {
@@ -3247,7 +3247,9 @@ Java_com_example_openglstudydemo_YuvPlayer_draw3DColorCubeCamera(JNIEnv *env, jo
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glDepthMask(true);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LESS);
+    glViewport(0,0,screen_width,screen_height);
 
     Shader shader(vertexShader3DGradientColor,frag3DGradientColor);
     int program = shader.use();

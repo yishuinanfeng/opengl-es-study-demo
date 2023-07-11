@@ -21,6 +21,14 @@ Java_com_example_openglstudydemo_YuvPlayer_handleTouchEvent(JNIEnv *env, jobject
     }
 
     switch (action) {
+        case TouchActionMode::ACTION_UP:
+            touchCtlCamera->lastX = 0.0f;
+            touchCtlCamera->lastY = 0.0f;
+            break;
+        case TouchActionMode::ACTION_CANCEL:
+            touchCtlCamera->lastX = 0.0f;
+            touchCtlCamera->lastY = 0.0f;
+            break;
         case TouchActionMode::ACTION_DOWN:
             touchCtlCamera->lastX = xpos;
             touchCtlCamera->lastY = ypos;
@@ -54,14 +62,7 @@ Java_com_example_openglstudydemo_YuvPlayer_handleTouchEvent(JNIEnv *env, jobject
             front.z = sin(glm::radians(touchCtlCamera->yaw)) * cos(glm::radians(touchCtlCamera->pitch));
             touchCtlCamera->cameraFront = glm::normalize(front);
             break;
-//        case TouchActionMode::ACTION_UP:
-//            lastX = 0.0f;
-//            lastY = 0.0f;
-//            break;
-//        case TouchActionMode::ACTION_CANCEL:
-//            lastX = 0.0f;
-//            lastY = 0.0f;
-//            break;
+
     }
 
 //    if (firstTouch) {

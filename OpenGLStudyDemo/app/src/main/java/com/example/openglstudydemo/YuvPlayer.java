@@ -123,6 +123,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
 //        draw3DCubeTexture(bitmaps,getHolder().getSurface(),surfaceWidth,surfaceHeight);
 //        draw3DCubeWithColor(getHolder().getSurface(),surfaceWidth,surfaceHeight);
+
 //        draw3DColorCubeCamera(getHolder().getSurface(),surfaceWidth,surfaceHeight);
         draw3DCubesCameraTouchCtl(getHolder().getSurface(),surfaceWidth,surfaceHeight);
     }
@@ -272,6 +273,12 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
      */
     public native void draw3DColorCubeCamera(Object surface,int screenWidth, int screenHeight);
 
+    /**
+     * 绘制多个渐变色立方体，可触摸移动摄像机位置
+     * @param surface
+     * @param screenWidth
+     * @param screenHeight
+     */
     public native void draw3DCubesCameraTouchCtl(Object surface,int screenWidth, int screenHeight);
 
     public native void handleTouchEvent(int action,float x, float y);
