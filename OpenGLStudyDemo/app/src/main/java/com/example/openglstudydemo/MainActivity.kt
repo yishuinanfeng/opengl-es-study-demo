@@ -7,7 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
     // Used to load the 'native-lib' library on application startup.
-
+    private var videoType = VideoTypeEnum.SIMPLE_YUV
+    private val yuvPlayer by lazy<YuvPlayer> {
+        findViewById(R.id.yuv_player)
+    }
     companion object {
         init {
             System.loadLibrary("native-lib")
@@ -22,6 +25,12 @@ class MainActivity : AppCompatActivity() {
         // Example of a call to a native method
 //        TextView tv = findViewById(R.id.sample_text);
 //        tv.setText(stringFromJNI());
+
+        intent?.let {
+            videoType = (intent.getSerializableExtra(Config.VideoTypeKey) as? VideoTypeEnum)
+                ?:VideoTypeEnum.SIMPLE_YUV
+            yuvPlayer.setVideoType(videoType)
+        }
     }
 
     /**

@@ -11,9 +11,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -23,11 +21,18 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     // private final static String PATH = "/sdcard/sintel_640_360.yuv";
     private final static String PATH = "/sdcard/video1_640_272.yuv";
 
+    private VideoTypeEnum videoType = VideoTypeEnum.SIMPLE_YUV;
+
     public YuvPlayer(Context context, AttributeSet attrs) {
         super(context, attrs);
         setRenderer(this);
 
         Log.d("YuvPlayer", "YuvPlayer");
+    }
+
+    public void setVideoType(VideoTypeEnum videoType) {
+        this.videoType = videoType;
+        Log.d("YuvPlayer", "videoType:" + videoType);
     }
 
     @Override
@@ -52,9 +57,97 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
         Log.d("YuvPlayer", "run");
 
         AssetManager assetManager = getContext().getAssets();
+        switch (videoType) {
+            case SIMPLE_YUV:
+                loadYuv(getHolder().getSurface(),assetManager);
+                break;
+            case NO_FILTER_YUV:
+                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.NONE,false);
+                break;
+            case GRAY_FILTER_YUV:
+                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.GRAY,true);
+                break;
+            case OPPO_FILTER_YUV:
+                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO,false);
+                break;
+            case DIVIDE_TO_2_YUV:
+                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_2,false);
+                break;
+            case DIVIDE_TO_4_YUV:
+                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_4,true);
+                break;
+            case SOUL_FLY_OFF_YUV:
+                loadYuvWithSoulFled(getHolder().getSurface(),assetManager);
+                break;
+            case GAUSS_BLUR_YUV:
+                loadYuvWithBlurEffect(getHolder().getSurface(),assetManager,0);
+                break;
+            case DRAW_TRIANGLE:
+                drawTriangle(getHolder().getSurface());
+                break;
+            case DRAW_TRIANGLE_UNIFORM:
+                drawTriangleUniform(getHolder().getSurface());
+                break;
+            case DRAW_TRIANGLE_VBO:
+                drawTriangleWithBufferObj(getHolder().getSurface());
+                break;
+            case DRAW_TRIANGLE_EBO:
+                drawTriangleWithEBO(getHolder().getSurface());
+                break;
+            case DRAW_TWO_TRIANGLE:
+                drawTwoTriangle(getHolder().getSurface());
+                break;
+            case DRAW_LINE:
+                drawLineWithColor(getHolder().getSurface());
+                break;
+            case DRAW_TEXTURE_MAX:
+                Bitmap bpLiyingai1 = ((BitmapDrawable) getResources().getDrawable(R.drawable.liyingai)).getBitmap();
+                Bitmap bpShiyuanmeili1 = ((BitmapDrawable) getResources().getDrawable(R.drawable.shiyuanmeili2)).getBitmap();
+                drawTexture(bpLiyingai1,bpShiyuanmeili1,getHolder().getSurface());
+                break;
+            case DRAW_3D_TEXTURE:
+                Bitmap bpLiyingai2 = ((BitmapDrawable) getResources().getDrawable(R.drawable.liyingai)).getBitmap();
+                Bitmap bpShiyuanmeili2 = ((BitmapDrawable) getResources().getDrawable(R.drawable.shiyuanmeili2)).getBitmap();
+
+                draw3DTexture(bpLiyingai2,bpShiyuanmeili2,getHolder().getSurface(),surfaceWidth,surfaceHeight);
+
+
+                break;
+            case DRAW_3D_CUBE_TEXTURE:
+                Bitmap labixiaoxin = ((BitmapDrawable) getResources().getDrawable(R.drawable.labixiaoxin1)).getBitmap();
+                Bitmap gangtieshenbing = ((BitmapDrawable) getResources().getDrawable(R.drawable.gangtieshenbing)).getBitmap();
+                Bitmap maohelaoshu = ((BitmapDrawable) getResources().getDrawable(R.drawable.maohelaoshu)).getBitmap();
+                Bitmap kenan = ((BitmapDrawable) getResources().getDrawable(R.drawable.kenan)).getBitmap();
+                Bitmap zuqiuxiaojiang = ((BitmapDrawable) getResources().getDrawable(R.drawable.zuqiuxiaojiang)).getBitmap();
+                Bitmap qilongzhu = ((BitmapDrawable) getResources().getDrawable(R.drawable.qilongzhu)).getBitmap();
+
+
+                Bitmap[] bitmaps = new Bitmap[6];
+                bitmaps[0] = labixiaoxin;
+                bitmaps[1] = gangtieshenbing;
+                bitmaps[2] = maohelaoshu;
+                bitmaps[3] = qilongzhu;
+                bitmaps[4] = zuqiuxiaojiang;
+                bitmaps[5] = kenan;
+
+                for (int i = 0; i < bitmaps.length; i++) {
+                    Log.d("YuvPlayer", "Bitmap:" + bitmaps[i]);
+                }
+
+                draw3DCubeTexture(bitmaps,getHolder().getSurface(),surfaceWidth,surfaceHeight);
+                break;
+
+            case DRAW_GRADIENT_COLOR_CUBE_TEXTURE:
+                draw3DCubeWithColor(getHolder().getSurface(),surfaceWidth,surfaceHeight);
+                break;
+
+            case DRAW_CUBES_MOVE_CAMERA:
+                draw3DCubesCameraTouchCtl(getHolder().getSurface(), surfaceWidth, surfaceHeight);
+                break;
+        }
 //        loadYuv(getHolder().getSurface(),assetManager);
 //      loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.NONE);
- //      loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.GRAY);
+        //      loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.GRAY);
 //       loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO_GRAY);
 //        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_2);
 //        loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_4,true);
@@ -63,8 +156,8 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 //        loadYuvWithBlurEffect(getHolder().getSurface(),assetManager,0);
 
 
-//     drawTwoTriangle(getHolder().getSurface());
 //        drawTriangle(getHolder().getSurface());
+//     drawTwoTriangle(getHolder().getSurface());
 //        drawLineWithColor(getHolder().getSurface());
 //        drawTriangleUniform(getHolder().getSurface());
 //        drawTriangleWithEBO(getHolder().getSurface());
@@ -72,7 +165,7 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
 //        drawableTexture();
 
-        drawaTexture();
+//        drawaTexture();
 
         Log.d("YuvPlayer", "loadYuv");
     }
@@ -91,14 +184,12 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
         int[] pix = new int[w * h];
         bitmap.getPixels(pix, 0, w, 0, 0, w, h);
 
-        Log.d("YuvPlayer", "drawableTexture:" + "w:" + w+ ",h:" + h + "，pix:" + Arrays.toString(pix));
+        Log.d("YuvPlayer", "drawableTexture:" + "w:" + w + ",h:" + h + "，pix:" + Arrays.toString(pix));
 
 
 //        drawTexture(bitmap, w, h, getHolder().getSurface());
-//        drawTexture(bitmap,bitmap1,getHolder().getSurface());
-//        draw3DTexture(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
-
-
+        drawTexture(bitmap,bitmap1,getHolder().getSurface());
+        draw3DTexture(bitmap,bitmap1,getHolder().getSurface(),surfaceWidth,surfaceHeight);
 
 
         Bitmap labixiaoxin = ((BitmapDrawable) getResources().getDrawable(R.drawable.labixiaoxin1)).getBitmap();
@@ -118,20 +209,20 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
         bitmaps[5] = kenan;
 
         for (int i = 0; i < bitmaps.length; i++) {
-            Log.d("YuvPlayer","Bitmap:" + bitmaps[i]);
+            Log.d("YuvPlayer", "Bitmap:" + bitmaps[i]);
         }
 
 //        draw3DCubeTexture(bitmaps,getHolder().getSurface(),surfaceWidth,surfaceHeight);
 //        draw3DCubeWithColor(getHolder().getSurface(),surfaceWidth,surfaceHeight);
 
 //        draw3DColorCubeCamera(getHolder().getSurface(),surfaceWidth,surfaceHeight);
-        draw3DCubesCameraTouchCtl(getHolder().getSurface(),surfaceWidth,surfaceHeight);
+        draw3DCubesCameraTouchCtl(getHolder().getSurface(), surfaceWidth, surfaceHeight);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction() & MotionEvent.ACTION_MASK;
-        handleTouchEvent(action,event.getX(),event.getY());
+        handleTouchEvent(action, event.getX(), event.getY());
         return true;
     }
 
@@ -139,15 +230,15 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
     public native void loadYuv(Object surface, AssetManager assetManager);
 
     public native void loadYuvWithFilterEffect(Object surface, AssetManager assetManager
-            ,int filterType,boolean isNeedScaleAnim);
+            , int filterType, boolean isNeedScaleAnim);
 
     public native void loadYuvWithBlurEffect(Object surface, AssetManager assetManager
-            ,int filterType);
+            , int filterType);
 
     public native void loadYuvWithSoulFled(Object surface, AssetManager assetManager);
 
 
-    interface FilterType{
+    interface FilterType {
         /**
          * 没有滤镜
          */
@@ -183,54 +274,63 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
     /**
      * 绘制2个三角形
+     *
      * @param surface
      */
     public native void drawTwoTriangle(Object surface);
 
     /**
      * 绘制点
+     *
      * @param surface
      */
     public native void drawPoints(Object surface);
 
     /**
      * 绘制线
+     *
      * @param surface
      */
     public native void drawLine(Object surface);
 
     /**
      * 绘制三角形，传递指定颜色
+     *
      * @param surface
      */
     public native void drawTriangleWithColorPass(Object surface);
 
     /**
      * 使用缓冲对象绘制三角形
+     *
      * @param surface
      */
     public native void drawTriangleWithBufferObj(Object surface);
 
     /**
      * 使用EBO绘制三角形
+     *
      * @param surface
      */
     public native void drawTriangleWithEBO(Object surface);
 
     /**
      * 使用Uniform变量
+     *
      * @param surface
      */
     public native void drawTriangleUniform(Object surface);
 
     /**
      * 指定颜色绘制线段
+     *
      * @param surface
      */
     public native void drawLineWithColor(Object surface);
 
     /**
      * 绘制纹理
+     *
      * @param bitmap
      * @param bitmap1
      * @param surface
@@ -239,14 +339,16 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
     /**
      * 绘制3D纹理
+     *
      * @param bitmap
      * @param bitmap1
      * @param surface
      */
-    public native void draw3DTexture(Bitmap bitmap, Bitmap bitmap1, Object surface,int screenWidth, int screenHeight);
+    public native void draw3DTexture(Bitmap bitmap, Bitmap bitmap1, Object surface, int screenWidth, int screenHeight);
 
     /**
      * 绘制立方体贴纹理
+     *
      * @param bitmapList
      * @param surface
      * @param surfaceWidth
@@ -256,36 +358,37 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
     /**
      * 绘制渐变色立方体
+     *
      * @param bitmap
      * @param bitmap1
      * @param surface
      * @param screenWidth
      * @param screenHeight
      */
-    public native void draw3DCubeWithColor(Object surface,int screenWidth, int screenHeight);
+    public native void draw3DCubeWithColor(Object surface, int screenWidth, int screenHeight);
 
 
     /**
      * 绘制多个渐变色立方体并移动摄像机位置
+     *
      * @param surface
      * @param screenWidth
      * @param screenHeight
      */
-    public native void draw3DColorCubeCamera(Object surface,int screenWidth, int screenHeight);
+    public native void draw3DColorCubeCamera(Object surface, int screenWidth, int screenHeight);
 
     /**
      * 绘制多个渐变色立方体，可触摸移动摄像机位置
+     *
      * @param surface
      * @param screenWidth
      * @param screenHeight
      */
-    public native void draw3DCubesCameraTouchCtl(Object surface,int screenWidth, int screenHeight);
+    public native void draw3DCubesCameraTouchCtl(Object surface, int screenWidth, int screenHeight);
 
-    public native void handleTouchEvent(int action,float x, float y);
+    public native void handleTouchEvent(int action, float x, float y);
 
 //    public native void drawTexture(int[] bitmapArr, int w, int h, Object surface);
-
-
 
 
     @Override
@@ -293,8 +396,8 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
 
     }
 
-    private int surfaceWidth ;
-    private int surfaceHeight ;
+    private int surfaceWidth;
+    private int surfaceHeight;
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {

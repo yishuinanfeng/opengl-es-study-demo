@@ -8,6 +8,7 @@
     tools:context=".MainActivity">
 
     <com.example.openglstudydemo.YuvPlayer
+        android:id="@+id/yuv_player"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
