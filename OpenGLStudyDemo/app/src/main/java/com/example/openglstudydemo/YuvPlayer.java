@@ -62,16 +62,16 @@ public class YuvPlayer extends GLSurfaceView implements Runnable, SurfaceHolder.
                 loadYuv(getHolder().getSurface(),assetManager);
                 break;
             case NO_FILTER_YUV:
-                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.NONE,false);
+                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.NONE,true);
                 break;
             case GRAY_FILTER_YUV:
                 loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.GRAY,true);
                 break;
             case OPPO_FILTER_YUV:
-                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO,false);
+                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.OPPO,true);
                 break;
             case DIVIDE_TO_2_YUV:
-                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_2,false);
+                loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_2,true);
                 break;
             case DIVIDE_TO_4_YUV:
                 loadYuvWithFilterEffect(getHolder().getSurface(),assetManager,FilterType.DIVIDE_TO_4,true);
